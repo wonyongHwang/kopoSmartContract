@@ -9,9 +9,6 @@ contract KOPONFT is KIP17URIStorage {
 
    constructor()  KIP17("KOPONFT", "KNFT") {}
 
-    function safeMint(address to, uint256 tokenId) internal   {
-        _safeMint(to, tokenId, "");
-    }
 
     function mintNFT(string memory tokenURI) public returns (uint256)
     {
