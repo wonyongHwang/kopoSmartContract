@@ -308,14 +308,14 @@ var auctionContract =  new web3.eth.Contract(
   }
 ]
   );
-var contractAddress = '0xBb065cA001fC7793Bde79FB9d32989164dcAB952';
+var contractAddress = '0x1f43cFb1Af9b23c7423c4D1A699e1bEd56496814';
 // var auction = auctionContract.at(contractAddress); 
-auctionContract.options.address = '0xBb065cA001fC7793Bde79FB9d32989164dcAB952';
+auctionContract.options.address = '0x1f43cFb1Af9b23c7423c4D1A699e1bEd56496814';
 
 function bid() {
 var mybid = document.getElementById('value').value;
 
-auctionContract.methods.bid().send({from: '0xd2a82Dc2660fEa1aB651dE44bF652D86a86b4920', value: web3.utils.toWei(mybid, "ether"), gas: 200000}).then((result)=>{
+auctionContract.methods.bid().send({from: '0x3211BA2b204cdb231EF5616ec3cAd26043b71394', value: web3.utils.toWei(mybid, "ether"), gas: 200000}).then((result)=>{
   console.log(result)
   // 
 
@@ -368,7 +368,8 @@ function cancel_auction(){
 // auctionContract.methods.cancel_auction().call().then( (result)=>{
 //   console.log(result)
 // });
-auctionContract.methods.cancel_auction().call({from: '0xd2a82Dc2660fEa1aB651dE44bF652D86a86b4920'}).then((res)=>{
+auctionContract.methods.cancel_auction().send({from: '0x3211BA2b204cdb231EF5616ec3cAd26043b71394', gas: 200000}).then((res)=>{
+// auctionContract.methods.cancel_auction().call({from: '0x3211BA2b204cdb231EF5616ec3cAd26043b71394'}).then((res)=>{
 console.log(res);
 }); 
 }
@@ -379,8 +380,7 @@ function Destruct_auction(){
 // auctionContract.methods.destruct_auction().call().then( (result)=>{
 //   console.log(result) //The auction is still open when now() time < auction_end time
 // });
-
-auctionContract.methods.destruct_auction().call({from: '0xd2a82Dc2660fEa1aB651dE44bF652D86a86b4920'}).then((res)=>{
+auctionContract.methods.destruct_auction().send({from: '0x3211BA2b204cdb231EF5616ec3cAd26043b71394', gas: 200000}).then((res)=>{
 console.log(res);
 }); 
 
@@ -419,14 +419,28 @@ filter.watch(callback): Watches for state changes that fit the filter and calls 
 //                 }
 //         });
 
+//  auctionContract.events.allEvents({fromBlock: 0}, function(error, event){ console.log(event); })
+// .on("connected", function(subscriptionId){
+//     console.log(subscriptionId);
+// })
+// .on('data', function(event){
+//     console.log(event); // same results as the optional callback above
+// })
+// .on('changed', function(event){
+//     // remove event from local database
+// })
+// .on('error', function(error, receipt) { // If the transaction was rejected by the network with a receipt, the second parameter will be the receipt.
+    
+// });
 
-var subscription = web3.eth.subscribe('CanceledEvent', function(error, result){
-    if (!error)
-        console.log(result);
-})
-.on("data", function(transaction){
-    console.log(transaction);
-});
+
+// var subscription = web3.eth.subscribe('CanceledEvent', function(error, result){
+//     if (!error)
+//         console.log(result);
+// })
+// .on("data", function(transaction){
+//     console.log(transaction);
+// });
 
 // unsubscribes the subscription
 // subscription.unsubscribe(function(error, success){
@@ -436,22 +450,22 @@ var subscription = web3.eth.subscribe('CanceledEvent', function(error, result){
 
 
 
- // auctionContract.events.CanceledEvent( function(error, event){ 
- //  console.log(event); 
- //  })
- //  .on("connected", function(subscriptionId){
- //      console.log(subscriptionId);
- //  })
- //  .on('data', function(event){
- //      console.log(event); // same results as the optional callback above
- //   $("#eventslog").html(event.args.message+' at '+event.args.time);
- //  })
- //  .on('changed', function(event){
- //      // remove event from local database
- //  })
- //  .on('error', function(error, receipt){ // If the transaction was rejected by the network with a receipt, the second parameter will be the receipt.
+ auctionContract.events.CanceledEvent( function(error, event){ 
+  console.log(event); 
+  })
+  .on("connected", function(subscriptionId){
+      console.log(subscriptionId);
+  })
+  .on('data', function(event){
+      console.log(event); // same results as the optional callback above
+   $("#eventslog").html(event.returnValues.message+' at '+event.returnValues.time);
+  })
+  .on('changed', function(event){
+      // remove event from local database
+  })
+  .on('error', function(error, receipt){ // If the transaction was rejected by the network with a receipt, the second parameter will be the receipt.
    
- //  });
+  });
 
  // var CanceledEvent = auctionContract.events.CanceledEvent();
   
