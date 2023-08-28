@@ -54,7 +54,39 @@ auctionContract.methods.bids(bidder).call().then( (result) => {
 });
 // web3.eth.defaultAccount = bidder;
 var auctionContract =  new web3.eth.Contract(
-    [
+   [
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "Mycar",
+    "outputs": [
+      {
+        "name": "Brand",
+        "type": "string"
+      },
+      {
+        "name": "Rnumber",
+        "type": "string"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "get_owner",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
   {
     "constant": false,
     "inputs": [],
@@ -86,6 +118,67 @@ var auctionContract =  new web3.eth.Contract(
   {
     "constant": false,
     "inputs": [],
+    "name": "withdraw",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "bids",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "auction_start",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "highestBidder",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [],
     "name": "destruct_auction",
     "outputs": [
       {
@@ -98,17 +191,45 @@ var auctionContract =  new web3.eth.Contract(
     "type": "function"
   },
   {
-    "constant": false,
+    "constant": true,
     "inputs": [],
-    "name": "withdraw",
+    "name": "auction_end",
     "outputs": [
       {
         "name": "",
-        "type": "bool"
+        "type": "uint256"
       }
     ],
     "payable": false,
-    "stateMutability": "nonpayable",
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "STATE",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "highestBid",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -174,7 +295,7 @@ var auctionContract =  new web3.eth.Contract(
       {
         "indexed": false,
         "name": "message",
-        "type": "string"
+        "type": "uint256"
       },
       {
         "indexed": false,
@@ -184,138 +305,17 @@ var auctionContract =  new web3.eth.Contract(
     ],
     "name": "CanceledEvent",
     "type": "event"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "auction_end",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "auction_start",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "bids",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "get_owner",
-    "outputs": [
-      {
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "highestBid",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "highestBidder",
-    "outputs": [
-      {
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "Mycar",
-    "outputs": [
-      {
-        "name": "Brand",
-        "type": "string"
-      },
-      {
-        "name": "Rnumber",
-        "type": "string"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "STATE",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint8"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
   }
 ]
   );
-var contractAddress = '0x2783eAA4BB06C2C15288b33AcF38226252a88E12';
+var contractAddress = '0xBb065cA001fC7793Bde79FB9d32989164dcAB952';
 // var auction = auctionContract.at(contractAddress); 
-auctionContract.options.address = '0x2783eAA4BB06C2C15288b33AcF38226252a88E12';
+auctionContract.options.address = '0xBb065cA001fC7793Bde79FB9d32989164dcAB952';
 
 function bid() {
 var mybid = document.getElementById('value').value;
 
-auctionContract.methods.bid().send({from: '0xa6623cc5264B05757852AD6aB663dB90E171080e', value: web3.utils.toWei(mybid, "ether"), gas: 200000}).then((result)=>{
+auctionContract.methods.bid().send({from: '0xd2a82Dc2660fEa1aB651dE44bF652D86a86b4920', value: web3.utils.toWei(mybid, "ether"), gas: 200000}).then((result)=>{
   console.log(result)
   // 
 
@@ -365,20 +365,25 @@ auctionContract.methods.get_owner().call().then((result)=>{
   
 function cancel_auction(){
   // .auction_end().call().
-auctionContract.methods.cancel_auction().call().then( (result)=>{
-  console.log(result)
-});
+// auctionContract.methods.cancel_auction().call().then( (result)=>{
+//   console.log(result)
+// });
+auctionContract.methods.cancel_auction().call({from: '0xd2a82Dc2660fEa1aB651dE44bF652D86a86b4920'}).then((res)=>{
+console.log(res);
+}); 
 }
 
 
 
 function Destruct_auction(){
-auctionContract.methods.destruct_auction().call().then( (result)=>{
-  console.log(result) //The auction is still open when now() time < auction_end time
-});
-// auctionContract.methods.destruct_auction().call({from: '0xAf91a82C2D968c6Ed3eeFe5dD90D860d011B7B0A'},function(error, result){
-// console.log(result);
-// }); 
+// auctionContract.methods.destruct_auction().call().then( (result)=>{
+//   console.log(result) //The auction is still open when now() time < auction_end time
+// });
+
+auctionContract.methods.destruct_auction().call({from: '0xd2a82Dc2660fEa1aB651dE44bF652D86a86b4920'}).then((res)=>{
+console.log(res);
+}); 
+
 }
   
 
@@ -413,22 +418,40 @@ filter.watch(callback): Watches for state changes that fit the filter and calls 
 //                     console.log(error);
 //                 }
 //         });
- auctionContract.events.CanceledEvent( function(error, event){ 
-console.log(event); 
+
+
+var subscription = web3.eth.subscribe('CanceledEvent', function(error, result){
+    if (!error)
+        console.log(result);
 })
-.on("connected", function(subscriptionId){
-    console.log(subscriptionId);
-})
-.on('data', function(event){
-    console.log(event); // same results as the optional callback above
- $("#eventslog").html(event.args.message+' at '+event.args.time);
-})
-.on('changed', function(event){
-    // remove event from local database
-})
-.on('error', function(error, receipt){ // If the transaction was rejected by the network with a receipt, the second parameter will be the receipt.
- 
+.on("data", function(transaction){
+    console.log(transaction);
 });
+
+// unsubscribes the subscription
+// subscription.unsubscribe(function(error, success){
+//     if(success)
+//         console.log('Successfully unsubscribed!');
+// });
+
+
+
+ // auctionContract.events.CanceledEvent( function(error, event){ 
+ //  console.log(event); 
+ //  })
+ //  .on("connected", function(subscriptionId){
+ //      console.log(subscriptionId);
+ //  })
+ //  .on('data', function(event){
+ //      console.log(event); // same results as the optional callback above
+ //   $("#eventslog").html(event.args.message+' at '+event.args.time);
+ //  })
+ //  .on('changed', function(event){
+ //      // remove event from local database
+ //  })
+ //  .on('error', function(error, receipt){ // If the transaction was rejected by the network with a receipt, the second parameter will be the receipt.
+   
+ //  });
 
  // var CanceledEvent = auctionContract.events.CanceledEvent();
   
