@@ -21,13 +21,14 @@ contract Auction {
     mapping(address => uint) public bids;
     auction_state public STATE;
     
-    modifier an_ongoing_auction(){
-        require(now <= auction_end);
+  modifier an_ongoing_auction(){
+        require(now <= auction_end, "The auction has ended");
+        require(STATE == auction_state.STARTED, "The auction has been cancelled");
         _;
     }
     
-    modifier only_owner(){
-        require(msg.sender == auction_owner);
+   modifier only_owner(){
+        require(msg.sender == auction_owner, "Only the owner can call this function");
         _;
     }
     
