@@ -308,14 +308,14 @@ var auctionContract =  new web3.eth.Contract(
   }
 ]
   );
-var contractAddress = '0x1f43cFb1Af9b23c7423c4D1A699e1bEd56496814';
+var contractAddress = '0xE01248dA043f59631432736F7853237ba31f439D';
 // var auction = auctionContract.at(contractAddress); 
-auctionContract.options.address = '0x1f43cFb1Af9b23c7423c4D1A699e1bEd56496814';
+auctionContract.options.address = '0xE01248dA043f59631432736F7853237ba31f439D';
 
 function bid() {
 var mybid = document.getElementById('value').value;
 
-auctionContract.methods.bid().send({from: '0x3211BA2b204cdb231EF5616ec3cAd26043b71394', value: web3.utils.toWei(mybid, "ether"), gas: 200000}).then((result)=>{
+auctionContract.methods.bid().send({from: '0x07257b3BC72b6D9aE8660204d4ce205ED650fAb2', value: web3.utils.toWei(mybid, "ether"), gas: 200000}).then((result)=>{
   console.log(result)
   // 
 
@@ -326,7 +326,7 @@ auctionContract.methods.bid().send({from: '0x3211BA2b204cdb231EF5616ec3cAd26043b
 
 // Automatically determines the use of call or sendTransaction based on the method type
 // auctionContract.methods.bid().call({value: web3.utils.toWei(mybid, "ether"), gas: 200000}, function(error, result){
-//   if(error)	
+//   if(error)  
 //   {console.log("error is "+ error); 
 //   document.getElementById("biding_status").innerHTML="Think to bidding higher"; 
 //   }
@@ -335,9 +335,9 @@ auctionContract.methods.bid().send({from: '0x3211BA2b204cdb231EF5616ec3cAd26043b
 // });
   
 } 
-	
+  
 
-	
+  
 function init(){
  // setTimeout(() => alert("아무런 일도 일어나지 않습니다."), 3000);
 
@@ -353,11 +353,11 @@ auctionContract.methods.get_owner().call().then((result)=>{
 
 })
   // auctionContract.methods.get_owner(function(error, result){
-	 //  if (!error){
-		//   auction_owner=result;
-	 //   if(bidder!=auction_owner)
-	 //   $("#auction_owner_operations").hide();
-	 //  }
+   //  if (!error){
+    //   auction_owner=result;
+   //   if(bidder!=auction_owner)
+   //   $("#auction_owner_operations").hide();
+   //  }
 
 // }
 // ); 
@@ -368,7 +368,7 @@ function cancel_auction(){
 // auctionContract.methods.cancel_auction().call().then( (result)=>{
 //   console.log(result)
 // });
-auctionContract.methods.cancel_auction().send({from: '0x3211BA2b204cdb231EF5616ec3cAd26043b71394', gas: 200000}).then((res)=>{
+auctionContract.methods.cancel_auction().send({from: '0x07257b3BC72b6D9aE8660204d4ce205ED650fAb2', gas: 200000}).then((res)=>{
 // auctionContract.methods.cancel_auction().call({from: '0x3211BA2b204cdb231EF5616ec3cAd26043b71394'}).then((res)=>{
 console.log(res);
 }); 
@@ -380,12 +380,31 @@ function Destruct_auction(){
 // auctionContract.methods.destruct_auction().call().then( (result)=>{
 //   console.log(result) //The auction is still open when now() time < auction_end time
 // });
-auctionContract.methods.destruct_auction().send({from: '0x3211BA2b204cdb231EF5616ec3cAd26043b71394', gas: 200000}).then((res)=>{
+auctionContract.methods.destruct_auction().send({from: '0x07257b3BC72b6D9aE8660204d4ce205ED650fAb2', gas: 200000}).then((res)=>{
 console.log(res);
 }); 
 
 }
-  
+
+
+// 현재 이 부분이 있으면 bid가 안된다
+function withdraw() {
+    const senderAddress = '0x07257b3BC72b6D9aE8660204d4ce205ED650fAb2'; // 거래 계좌
+
+    // 스마트 계약으로부터 환불할 금액 확인
+    const amountToRefund = bids[senderAddress];
+
+    try {
+        // 스마트 계약의 withdraw 함수를 호출하여 환불을 처리
+        await contract.methods.withdraw().send({ from: senderAddress });
+
+        console.log('Withdraw Successful');
+        console.log('Amount Refunded:', amountToRefund);
+    } catch (error) {
+        console.error('Error:', error.message);
+    }
+}
+
 
 
 auctionContract.events.BidEvent(/*{highestBidder:"A",highestBid:"888"},*/function(error, event){ 
@@ -472,7 +491,7 @@ filter.watch(callback): Watches for state changes that fit the filter and calls 
  //    CanceledEvent.watch(function(error, result){
  //            if (!error)
  //                {
-	// 				                    console.log(result);
+  //                            console.log(result);
 
  //                    $("#eventslog").html(result.args.message+' at '+result.args.time);
  //                } else {
@@ -480,8 +499,8 @@ filter.watch(callback): Watches for state changes that fit the filter and calls 
  //                    console.log(error);
  //                }
  //        });
-	
-  	 
+  
+     
 // const filter = web3.eth.subscribe({
 //   fromBlock: 0,
 //   toBlock: 'latest',
@@ -493,7 +512,7 @@ filter.watch(callback): Watches for state changes that fit the filter and calls 
 // })
  
 // filter.get((error, result) => {
-// 	   if (!error)
+//     if (!error)
 //   console.log(result);
 //   //console.log(result[0].data);
  
