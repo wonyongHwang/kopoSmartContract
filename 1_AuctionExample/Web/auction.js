@@ -54,204 +54,43 @@ auctionContract.methods.bids(bidder).call().then( (result) => {
 });
 // web3.eth.defaultAccount = bidder;
 var auctionContract =  new web3.eth.Contract(
-   [
+[
   {
-    "constant": true,
-    "inputs": [],
-    "name": "Mycar",
-    "outputs": [
-      {
-        "name": "Brand",
-        "type": "string"
-      },
-      {
-        "name": "Rnumber",
-        "type": "string"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "get_owner",
-    "outputs": [
-      {
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": false,
     "inputs": [],
     "name": "bid",
     "outputs": [
       {
+        "internalType": "bool",
         "name": "",
         "type": "bool"
       }
     ],
-    "payable": true,
     "stateMutability": "payable",
     "type": "function"
   },
   {
-    "constant": false,
-    "inputs": [],
-    "name": "cancel_auction",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [],
-    "name": "withdraw",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": true,
     "inputs": [
       {
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "bids",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "auction_start",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "highestBidder",
-    "outputs": [
-      {
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [],
-    "name": "destruct_auction",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "auction_end",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "STATE",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint8"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "highestBid",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
+        "internalType": "uint256",
         "name": "_biddingTime",
         "type": "uint256"
       },
       {
+        "internalType": "address",
         "name": "_owner",
         "type": "address"
       },
       {
+        "internalType": "string",
         "name": "_brand",
         "type": "string"
       },
       {
+        "internalType": "string",
         "name": "_Rnumber",
         "type": "string"
       }
     ],
-    "payable": false,
     "stateMutability": "nonpayable",
     "type": "constructor"
   },
@@ -260,11 +99,13 @@ var auctionContract =  new web3.eth.Contract(
     "inputs": [
       {
         "indexed": true,
+        "internalType": "address",
         "name": "highestBidder",
         "type": "address"
       },
       {
         "indexed": false,
+        "internalType": "uint256",
         "name": "highestBid",
         "type": "uint256"
       }
@@ -273,15 +114,95 @@ var auctionContract =  new web3.eth.Contract(
     "type": "event"
   },
   {
+    "inputs": [],
+    "name": "cancel_auction",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "anonymous": false,
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "message",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "time",
+        "type": "uint256"
+      }
+    ],
+    "name": "CanceledEvent",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "deactivateAuction",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "enum Auction.auction_state",
+        "name": "newState",
+        "type": "uint8"
+      }
+    ],
+    "name": "StateUpdated",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "enum Auction.auction_state",
+        "name": "newState",
+        "type": "uint8"
+      }
+    ],
+    "name": "updateAuctionState",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "withdraw",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "withdrawer",
         "type": "address"
       },
       {
         "indexed": false,
+        "internalType": "uint256",
         "name": "amount",
         "type": "uint256"
       }
@@ -290,32 +211,137 @@ var auctionContract =  new web3.eth.Contract(
     "type": "event"
   },
   {
-    "anonymous": false,
-    "inputs": [
+    "inputs": [],
+    "name": "withdrawRemainingFunds",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "auction_end",
+    "outputs": [
       {
-        "indexed": false,
-        "name": "message",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "name": "time",
+        "internalType": "uint256",
+        "name": "",
         "type": "uint256"
       }
     ],
-    "name": "CanceledEvent",
-    "type": "event"
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "auction_start",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "bids",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "get_owner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "highestBid",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "highestBidder",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "Mycar",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "Brand",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "Rnumber",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "STATE",
+    "outputs": [
+      {
+        "internalType": "enum Auction.auction_state",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   }
 ]
   );
-var contractAddress = '0x1f43cFb1Af9b23c7423c4D1A699e1bEd56496814';
+var contractAddress = '0x48aD25108F4B84033C0E1ebB8724709B6B8bEEd8';
 // var auction = auctionContract.at(contractAddress); 
-auctionContract.options.address = '0x1f43cFb1Af9b23c7423c4D1A699e1bEd56496814';
+auctionContract.options.address = '0x48aD25108F4B84033C0E1ebB8724709B6B8bEEd8';
 
 function bid() {
 var mybid = document.getElementById('value').value;
 
-auctionContract.methods.bid().send({from: '0x3211BA2b204cdb231EF5616ec3cAd26043b71394', value: web3.utils.toWei(mybid, "ether"), gas: 200000}).then((result)=>{
+auctionContract.methods.bid().send({from: '0xbE6f814236Ba430F0A5AAeE0a269faCdbDc4F777', value: web3.utils.toWei(mybid, "ether"), gas: 200000}).then((result)=>{
   console.log(result)
   // 
 
@@ -368,7 +394,7 @@ function cancel_auction(){
 // auctionContract.methods.cancel_auction().call().then( (result)=>{
 //   console.log(result)
 // });
-auctionContract.methods.cancel_auction().send({from: '0x3211BA2b204cdb231EF5616ec3cAd26043b71394', gas: 200000}).then((res)=>{
+auctionContract.methods.cancel_auction().send({from: '0xbE6f814236Ba430F0A5AAeE0a269faCdbDc4F777', gas: 200000}).then((res)=>{
 // auctionContract.methods.cancel_auction().call({from: '0x3211BA2b204cdb231EF5616ec3cAd26043b71394'}).then((res)=>{
 console.log(res);
 }); 
@@ -377,12 +403,7 @@ console.log(res);
 
 
 function Destruct_auction(){
-// auctionContract.methods.destruct_auction().call().then( (result)=>{
-//   console.log(result) //The auction is still open when now() time < auction_end time
-// });
-auctionContract.methods.destruct_auction().send({from: '0x3211BA2b204cdb231EF5616ec3cAd26043b71394', gas: 200000}).then((res)=>{
-console.log(res);
-}); 
+  
 
 }
   
