@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERC20 Permit Token DApp</title>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.0/dist/ethers.umd.min.js"></script>
+    <script src=https://cdn.jsdelivr.net/gh/ethereum/web3.js@3.0.0/dist/web3.min.js></script>
+
+    <!-- <script src="https://cdn.jsdelivr.net/gh/ethereum/web3.js@1.6.1/dist/web3.min.js"></script> -->
+</head>
+<body>
+    <h1>ERC20 Permit Token DApp</h1>
+
+    <div>
+        <h2>Owner Information</h2>
+        <p>Owner Address: <span id="owner-address"></span></p>
+        <p>Owner Balance: <span id="owner-balance"></span></p>
+    </div>
+
+    <div>
+        <h2>Spender Information</h2>
+        <p>Spender Address: <span id="spender-address"></span></p>
+        <p>Spender Balance: <span id="spender-balance"></span></p>
+    </div>
+
+    <div>
+        <h2>Recipents Information</h2>
+        <p>Recipents Address: <span id="Recipents-address"></span></p>
+        <p>Recipents Balance: <span id="Recipents-balance"></span></p>
+    </div>
+
+    <div>
+        <h2>Transfer Details</h2>
+        <label for="amount">100 MTK Approve/Transfer Demo</label>
+        <!-- <input type="text" id="amount" value="0.1" /> -->
+        <button id="approve-permit">Approve Permit</button>
+        <button id="transfer-tokens">Transfer Tokens</button>
+        <p id="status"></p>
+    </div>
+
+    <script>
+        const tokenABI = [
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      }
+    ],
+    "name": "approve",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [],
+    "name": "ECDSAInvalidSignature",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "length",
+        "type": "uint256"
+      }
+    ],
+    "name": "ECDSAInvalidSignatureLength",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "s",
+        "type": "bytes32"
+      }
+    ],
+    "name": "ECDSAInvalidSignatureS",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "allowance",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "needed",
+        "type": "uint256"
+      }
+    ],
+    "name": "ERC20InsufficientAllowance",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "sender",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "balance",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "needed",
+        "type": "uint256"
+      }
+    ],
+    "name": "ERC20InsufficientBalance",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "approver",
+        "type": "address"
+      }
+    ],
+    "name": "ERC20InvalidApprover",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "receiver",
+        "type": "address"
+      }
+    ],
+    "name": "ERC20InvalidReceiver",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "sender",
+        "type": "address"
+      }
+    ],
+    "name": "ERC20InvalidSender",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      }
+    ],
+    "name": "ERC20InvalidSpender",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "deadline",
+        "type": "uint256"
+      }
+    ],
+    "name": "ERC2612ExpiredSignature",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "signer",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      }
+    ],
+    "name": "ERC2612InvalidSigner",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "currentNonce",
+        "type": "uint256"
+      }
+    ],
+    "name": "InvalidAccountNonce",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidShortString",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "deadline",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint8",
+        "name": "v",
+        "type": "uint8"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "r",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "s",
+        "type": "bytes32"
+      }
+    ],
+    "name": "permit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "str",
+        "type": "string"
+      }
+    ],
+    "name": "StringTooLong",
+    "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      }
+    ],
+    "name": "Approval",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [],
+    "name": "EIP712DomainChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "previousOwner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnershipTransferred",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      }
+    ],
+    "name": "PermitFailed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      }
+    ],
+    "name": "PermitSuccess",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "transfer",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      }
+    ],
+    "name": "Transfer",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "transferFrom",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      }
+    ],
+    "name": "allowance",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "balanceOf",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "decimals",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "DOMAIN_SEPARATOR",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "eip712Domain",
+    "outputs": [
+      {
+        "internalType": "bytes1",
+        "name": "fields",
+        "type": "bytes1"
+      },
+      {
+        "internalType": "string",
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "version",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "chainId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "verifyingContract",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "salt",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "extensions",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "name",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      }
+    ],
+    "name": "nonces",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "symbol",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "totalSupply",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+];
+
+        const tokenAddress = "0xa85233C63b9Ee964Add6F2cffe00Fd84eb32338f"; // 배포된 ERC20PermitToken의 주소
+
+        // Web3 인스턴스 생성 (WebSocket 사용)
+        // const web3 = new Web3(new Web3.providers.WebsocketProvider("ws://localhost:8545"));
+        var web3 = new Web3('ws://localhost:8545');
+
+        // const web3 = new Web3("http://localhost:8545");
+
+        const tokenContract = new web3.eth.Contract(tokenABI, tokenAddress);
+
+        let owner, spender, recipient;
+
+        async function loadAccounts() {
+            const accounts = await web3.eth.getAccounts();
+            owner = accounts[0];
+            spender = accounts[1];
+            recipient = accounts[2];
+
+            document.getElementById('owner-address').textContent = owner;
+            document.getElementById('spender-address').textContent = spender;
+            document.getElementById('Recipents-address').textContent = recipient;
+
+            await updateBalances(); // balance 업데이트 함수 호출
+        }
+
+        async function updateBalances() {
+            const ownerBalance = await tokenContract.methods.balanceOf(owner).call();
+            const spenderBalance = await tokenContract.methods.balanceOf(spender).call();
+            const recipentsBalance = await tokenContract.methods.balanceOf(recipient).call();
+
+            document.getElementById('owner-balance').textContent = web3.utils.fromWei(ownerBalance, 'ether') + ' MTK';
+            document.getElementById('spender-balance').textContent = web3.utils.fromWei(spenderBalance, 'ether') + ' MTK';
+            document.getElementById('Recipents-balance').textContent = web3.utils.fromWei(recipentsBalance, 'ether') + ' MTK';
+        }
+
+        // PermitFailed 이벤트 리스닝 (WebSocket 기반)
+        // tokenContract.events.PermitFailed({
+        //     fromBlock: 'latest'
+        // }, function (error, event) {
+        //     if (error) {
+        //         console.error("Error receiving PermitFailed event:", error);
+        //     } else {
+        //         console.log("PermitFailed Event:", event);
+        //         const { owner, spender, value } = event.returnValues;
+        //         document.getElementById('status').textContent = `PermitFailed: Owner: ${owner}, Spender: ${spender}, Value: ${value}`;
+        //     }
+        // });
+
+        tokenContract.events.PermitFailed(
+          function(error, event){ 
+            console.log(event); 
+            console.log(error); 
+        })
+        .on("connected", function(subscriptionId){
+            console.log(subscriptionId);
+        })
+        .on('data', function(event){
+            console.log(event); // same results as the optional callback above
+           
+
+        })
+        .on('changed', function(event){
+            // remove event from local database
+            console.log(event);
+        })
+
+        tokenContract.events.PermitSuccess(
+          function(error, event){ 
+            console.log(error); 
+        })
+        .on("connected", function(subscriptionId){
+            console.log(subscriptionId);
+        })
+        .on('data', function(event){
+            console.log(event); // same results as the optional callback above
+        })
+        .on('changed', function(event){
+            // remove event from local database
+            console.log(event);
+        })
+
+
+        document.getElementById('approve-permit').addEventListener('click', async () => {
+            try {
+                const amount = ethers.utils.parseUnits("10", 2); // 10 * 10^2 = 1000 MTK 토큰 허가
+
+                // decimals 값 가져오기
+                const decimals = await tokenContract.methods.decimals().call();
+
+                // 변환된 값
+                // const scaledAmount = web3.utils.toBN(amount).mul(web3.utils.toBN(10).pow(web3.utils.toBN(decimals)));
+
+                const deadline = Math.floor(Date.now() / 1000) + 3600; // 1시간 뒤 만료
+
+                // 도메인 설정
+                const domain = {
+                    name: await tokenContract.methods.name().call(),
+                    version: "1",
+                    chainId: await web3.eth.getChainId(),
+                    verifyingContract: tokenAddress
+                };
+
+                const types = {
+                    Permit: [
+                        { name: "owner", type: "address" },
+                        { name: "spender", type: "address" },
+                        { name: "value", type: "uint256" },
+                        { name: "deadline", type: "uint256" }
+                    ]
+                };
+                const tempAmt = 100;
+                const valueObj = {
+                    owner: owner,
+                    spender: spender,
+                    value: amount, /*amount.toString()*/ // scaledAmount.toString(),
+                    deadline: deadline
+                };
+
+                const privateKey = '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80';
+                const provider = new ethers.providers.JsonRpcProvider("ws://localhost:8545");
+                const wallet = new ethers.Wallet(privateKey, provider);
+                const signer = wallet.connect(provider);
+
+                // 서명 생성
+                const signature = await signer._signTypedData(domain, types, valueObj);
+                const { v, r, s } = ethers.utils.splitSignature(signature);
+
+                // 서명 복구 검증
+                const recoveredAddress = ethers.utils.recoverAddress(
+                    ethers.utils._TypedDataEncoder.hash(domain, types, valueObj),
+                    { v, r, s }
+                );
+
+                // 서명 검증 결과 반영
+                if (recoveredAddress.toLowerCase() !== owner.toLowerCase()) {
+                    throw new Error("Recovered address does not match the owner address!");
+                } else {
+                    console.log("sing success");
+                    document.getElementById('status').textContent = 'Signature verified! Permit approved!';
+                }
+
+                console.log("Owner:", owner);
+                console.log("Spender:", spender);
+                console.log("amount :", amount);
+                console.log("Deadline:", deadline);
+                console.log("v:", v);
+                console.log("r:", r);
+                console.log("s:", s);
+                console.log("From:", owner);
+                // Permit 함수 호출
+                await tokenContract.methods.permit(owner, spender, amount /*amount.toString()*/, deadline, v, r, s).send({ from: owner });
+
+            } catch (error) {
+                console.error(error);
+                document.getElementById('status').textContent = 'Error approving permit: ' + error.message;
+            }
+        });
+
+        document.getElementById('transfer-tokens').addEventListener('click', async () => {
+            try {
+                // const amount = web3.utils.toWei(document.getElementById('amount').value, 'ether');
+                const amount = ethers.utils.parseUnits("10", 1); // 10 * 10^1 = 100 MTK 토큰 
+
+                await tokenContract.methods.transferFrom(owner, recipient, amount).send({ from: spender });
+                document.getElementById('status').textContent = 'Tokens transferred!';
+                updateBalances();
+            } catch (error) {
+                console.error(error);
+                document.getElementById('status').textContent = 'Error transferring tokens: ' + error.message;
+            }
+        });
+
+        loadAccounts();
+    </script>
+</body>
+</html>
