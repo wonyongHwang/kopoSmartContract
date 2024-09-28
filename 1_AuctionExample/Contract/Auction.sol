@@ -101,7 +101,9 @@ contract MyAuction is Auction {
         bids[msg.sender] = 0;
 
         // 안전한 전송 방법 사용
-        (bool success, ) = payable(msg.sender).call{value: amount}("");
+        // (bool success, ) = payable(msg.sender).call{value: amount}("");
+        (bool success, ) = payable(msg.sender).call{value: amount, gas: 5000}(""); 
+
         require(success, "Transfer failed");
 
         emit WithdrawalEvent(msg.sender, amount);
