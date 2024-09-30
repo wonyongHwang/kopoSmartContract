@@ -13,6 +13,7 @@ contract EnumExam {
 
     function setStatus(uint _newStatus) public {
         // 유효한 상태 값 검증
+        // myStatus = status.running; // revert 실습
         require(_newStatus <= uint(status.pending), "Invalid status");
         myStatus = status(_newStatus);
     }
