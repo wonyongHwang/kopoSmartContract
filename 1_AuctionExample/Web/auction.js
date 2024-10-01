@@ -42,19 +42,6 @@ web3.eth.getAccounts().then(function(acc){
 var auctionContract =  new web3.eth.Contract(
 [
   {
-    "inputs": [],
-    "name": "bid",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -100,19 +87,6 @@ var auctionContract =  new web3.eth.Contract(
     "type": "event"
   },
   {
-    "inputs": [],
-    "name": "cancel_auction",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
     "anonymous": false,
     "inputs": [
       {
@@ -132,13 +106,6 @@ var auctionContract =  new web3.eth.Contract(
     "type": "event"
   },
   {
-    "inputs": [],
-    "name": "deactivateAuction",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
     "anonymous": false,
     "inputs": [
       {
@@ -150,32 +117,6 @@ var auctionContract =  new web3.eth.Contract(
     ],
     "name": "StateUpdated",
     "type": "event"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "enum Auction.auction_state",
-        "name": "newState",
-        "type": "uint8"
-      }
-    ],
-    "name": "updateAuctionState",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "withdraw",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
   },
   {
     "anonymous": false,
@@ -198,9 +139,33 @@ var auctionContract =  new web3.eth.Contract(
   },
   {
     "inputs": [],
-    "name": "withdrawRemainingFunds",
-    "outputs": [],
-    "stateMutability": "nonpayable",
+    "name": "Mycar",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "Brand",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "Rnumber",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "STATE",
+    "outputs": [
+      {
+        "internalType": "enum Auction.auction_state",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -230,6 +195,19 @@ var auctionContract =  new web3.eth.Contract(
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "bid",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -246,6 +224,26 @@ var auctionContract =  new web3.eth.Contract(
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "cancel_auction",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "deactivateAuction",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -288,41 +286,43 @@ var auctionContract =  new web3.eth.Contract(
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "Mycar",
-    "outputs": [
+    "inputs": [
       {
-        "internalType": "string",
-        "name": "Brand",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "Rnumber",
-        "type": "string"
+        "internalType": "enum Auction.auction_state",
+        "name": "newState",
+        "type": "uint8"
       }
     ],
-    "stateMutability": "view",
+    "name": "updateAuctionState",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [],
-    "name": "STATE",
+    "name": "withdraw",
     "outputs": [
       {
-        "internalType": "enum Auction.auction_state",
+        "internalType": "bool",
         "name": "",
-        "type": "uint8"
+        "type": "bool"
       }
     ],
-    "stateMutability": "view",
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "withdrawRemainingFunds",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   }
 ]
-  );
+);
 
-auctionContract.options.address = '0x219Ecf875eF1eD0a8a9279a3C5B384744435b27d';
-var userWalletAddress = '0x6fE8CAc4F58d1aee746d11919D132E1B05ed3c13';
+auctionContract.options.address = '0x5803f0D312D1Ba549595204eCEA56e4b179Bd76F';
+var userWalletAddress = '0x5C788206A2308916897Ed345D634dF830cF7e2AC';
 function bid() {
   var mybid = document.getElementById('value').value;
 
