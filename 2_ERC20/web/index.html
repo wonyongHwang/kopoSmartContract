@@ -668,7 +668,7 @@
   }
 ];
 
-        const tokenAddress = "0xa85233C63b9Ee964Add6F2cffe00Fd84eb32338f"; // 배포된 ERC20PermitToken의 주소
+        const tokenAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"; // 배포된 ERC20PermitToken의 주소
 
         // Web3 인스턴스 생성 (WebSocket 사용)
         // const web3 = new Web3(new Web3.providers.WebsocketProvider("ws://localhost:8545"));
@@ -818,7 +818,7 @@
                 console.log("s:", s);
                 console.log("From:", owner);
                 // Permit 함수 호출
-                await tokenContract.methods.permit(owner, spender, amount /*amount.toString()*/, deadline, v, r, s).send({ from: owner });
+                await tokenContract.methods.permit(owner, spender, amount /*amount.toString()*/, deadline, v, r, s).send({ from: spender });
 
             } catch (error) {
                 console.error(error);
