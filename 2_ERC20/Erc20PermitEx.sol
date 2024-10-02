@@ -4,7 +4,7 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract ERC20PermitToken is ERC20Permit, Ownable {
+contract ERC20PermitToken is ERC20Permit, Ownable(msg.sender) {
     // 이벤트 정의
     event PermitFailed(address indexed owner, address indexed spender, uint256 value);
     event PermitSuccess(address indexed owner, address indexed spender, uint256 value);
