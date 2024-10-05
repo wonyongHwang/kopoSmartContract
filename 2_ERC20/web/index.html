@@ -668,7 +668,7 @@
   }
 ];
 
-        const tokenAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"; // 배포된 ERC20PermitToken의 주소
+        const tokenAddress = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"; // 배포된 ERC20PermitToken의 주소
 
         // Web3 인스턴스 생성 (WebSocket 사용)
         // const web3 = new Web3(new Web3.providers.WebsocketProvider("ws://localhost:8545"));
@@ -805,7 +805,7 @@
                 if (recoveredAddress.toLowerCase() !== owner.toLowerCase()) {
                     throw new Error("Recovered address does not match the owner address!");
                 } else {
-                    console.log("sing success");
+                    console.log("sign success");
                     document.getElementById('status').textContent = 'Signature verified! Permit approved!';
                 }
 
