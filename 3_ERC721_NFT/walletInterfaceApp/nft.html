@@ -189,6 +189,31 @@
         "anonymous": false,
         "inputs": [
             {
+                "indexed": false,
+                "internalType": "address",
+                "name": "to",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "tokenId",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "string",
+                "name": "tokenURI",
+                "type": "string"
+            }
+        ],
+        "name": "NFTMinted",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
                 "indexed": true,
                 "internalType": "address",
                 "name": "from",
@@ -490,7 +515,7 @@
         "type": "function"
     }
 ];
-        const contractAddress = '0x3C5740CE63D420752B41cB59aCBb4e7eC19aca20'; // 배포된 컨트랙트 주소
+        const contractAddress = '0x3E2Bb9dE4a53fA0571618012C5a91C7aa0d9B3BB'; // 배포된 컨트랙트 주소
 
         // Web3 초기화 함수
         function initializeWeb3() {
@@ -542,10 +567,15 @@
             contract.methods.mintNFT(recipientAddress, tokenURI).send({ from: account })
                 .then(receipt => {
                     alert('NFT minted successfully! Transaction hash: ' + receipt.transactionHash);
-                })
-                .catch(error => {
-                    console.error('Error minting NFT:', error);
-                });
+
+                    // 이벤트 로그에서 newDeedId 추출
+                    const event = receipt.events.NFTMinted;
+                    const newDeedId = event.returnValues.tokenId;
+                    alert('NFT minted successfully! Token ID: ' + newDeedId);
+                        })
+                        .catch(error => {
+                            console.error('Error minting NFT:', error);
+                        });
         }
 
         // Token URI 조회 함수
