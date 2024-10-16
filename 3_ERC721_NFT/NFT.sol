@@ -15,6 +15,8 @@ contract NFT is ERC721 {
     constructor() ERC721("KOPO", "KPO") {}
 
     mapping(uint => string) tokenURIs;
+    event NFTMinted(address to, uint256 tokenId, string tokenURI);
+
 
     function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
       return tokenURIs[tokenId];
@@ -27,7 +29,8 @@ contract NFT is ERC721 {
         _mint(to, newDeedId);
         tokenURIs[newDeedId] = uri;
 
+        emit NFTMinted(to, newDeedId, uri); // 이벤트 발생
+        
         return newDeedId;
     }
 }
-
