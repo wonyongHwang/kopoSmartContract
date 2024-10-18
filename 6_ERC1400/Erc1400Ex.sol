@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.24;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -40,7 +40,7 @@ contract ERC1400 is ERC20, Ownable {
         string memory name,
         string memory symbol,
         address[] memory controllers
-    ) ERC20(name, symbol) {
+    ) ERC20(name, symbol) Ownable(msg.sender) {
         _controllers = controllers;
     }
 
