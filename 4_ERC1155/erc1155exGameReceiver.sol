@@ -59,6 +59,8 @@ contract MyERC1155Receiver is IERC1155Receiver {
     }
 
    // ERC165 인터페이스 지원
+   // IERC1155Receiver의 interfaceId는 ERC-165 표준에 따라 두 개의 함수 시그니처에 대한 해시 값을 XOR 연산을 통해 계산됨
+   // IERC1155Receiver의 interfaceId는 0x4e2312e0
     function supportsInterface(bytes4 interfaceId) public pure override returns (bool) {
         return interfaceId == type(IERC1155Receiver).interfaceId || interfaceId == type(IERC165).interfaceId;
     }
