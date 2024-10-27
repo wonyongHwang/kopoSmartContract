@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICO DApp</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+</head>
+<body>
+    <h1>ICO DApp</h1>
+
+    <!-- MetaMask 연결 버튼 -->
+    <button id="connectButton">Connect MetaMask</button>
+    <p id="accountDisplay">Not connected</p>
+
+    <!-- 이더 전송으로 토큰 구매 -->
+    <h3>Buy Tokens</h3>
+    <form id="buyTokensForm">
+        <input type="text" id="etherAmount" placeholder="Amount of Ether" required>
+        <button type="submit">Buy Tokens</button>
+    </form>
+
+    <!-- 토큰 잔액 확인 -->
+    <h3>Check Token Balance</h3>
+    <button id="checkBalanceButton">Check Balance</button>
+    <p id="balanceOutput"></p>
+
+    <!-- 토큰 승인 (Approve) 기능 추가 -->
+    <h3>Approve Tokens for ICO</h3>
+    <form id="approveTokensForm">
+        <input type="text" id="tokenAmount" placeholder="Amount of Tokens" required>
+        <button type="submit">Approve Tokens</button>
+    </form>
+
+    <script>
+        let web3;
+        let icoContract;
+        let tokenContract;
+        let accounts;
+
+        const icoContractAddress = '/* ICO 컨트랙트 주소 */';  // ICO 컨트랙트 주소
+        const icoContractABI = [ /* ICO 컨트랙트 ABI */ ];  // ICO 컨트랙트의 ABI
+        const tokenContractAddress = '/* 토큰 컨트랙트 주소 */';  // Token 컨트랙트 주소
+        const tokenContractABI = [ /* Token 컨트랙트 ABI */ ];  // Token 컨트랙트의 ABI
+
+        // MetaMask 연결
+        async function connectMetaMask() {
+            if (typeof window.ethereum !== 'undefined') {
+                try {
+                    accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    web3 = new Web3(window.ethereum);
+
+                    // 컨트랙트 인스턴스 설정
+                    icoContract = new web3.eth.Contract(icoContractABI, icoContractAddress);
+                    tokenContract = new web3.eth.Contract(tokenContractABI, tokenContractAddress);
+
+                    document.getElementById("accountDisplay").innerText = `Connected account: ${accounts[0]}`;
+                } catch (error) {
+                    console.error("User rejected account access");
+                }
+            } else {
+                alert('MetaMask is not installed!');
+            }
+        }
+
+        // MetaMask와 연결 버튼 핸들러
+        document.getElementById('connectButton').onclick = async () => {
+            await connectMetaMask();
+        };
+
+        // 이더를 전송하여 토큰을 구매하는 함수
+        async function buyTokens(etherAmount) {
+            const value = web3.utils.toWei(etherAmount, 'ether');
+            // 컨트랙트로 단순히 이더를 전송하여 receive() 함수 호출
+            await web3.eth.sendTransaction({
+                from: accounts[0],
+                to: icoContractAddress,
+                value: value
+            });
+            alert('Tokens purchased successfully!');
+        }
+
+        // 토큰 잔액 확인 함수
+        async function checkBalance() {
+            const balance = await tokenContract.methods.balanceOf(accounts[0]).call();
+            const formattedBalance = web3.utils.fromWei(balance, 'ether');
+            document.getElementById('balanceOutput').innerText = `Your Token Balance: ${formattedBalance} MTK`;
+        }
+
+        // ICO 컨트랙트를 위해 토큰을 승인하는 함수 (Approve)
+        async function approveTokensForICO(tokenAmount) {
+            const weiTokenAmount = web3.utils.toWei(tokenAmount, 'ether');
+            await tokenContract.methods.approve(icoContractAddress, weiTokenAmount).send({ from: accounts[0] });
+            alert(`Approved ${tokenAmount} tokens for ICO contract`);
+        }
+
+        // 토큰 구매 폼 제출 핸들러
+        document.getElementById('buyTokensForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const etherAmount = document.getElementById('etherAmount').value;
+            await buyTokens(etherAmount);
+        };
+
+        // 잔액 확인 버튼 클릭 핸들러
+        document.getElementById('checkBalanceButton').onclick = async () => {
+            await checkBalance();
+        };
+
+        // 토큰 승인 폼 제출 핸들러
+        document.getElementById('approveTokensForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const tokenAmount = document.getElementById('tokenAmount').value;
+            await approveTokensForICO(tokenAmount);
+        };
+    </script>
+</body>
+</html>

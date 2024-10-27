@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send Ether</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+</head>
+<body>
+    <h2>Send Ether</h2>
+
+    <label for="address">Recipient Address:</label>
+    <input type="text" id="recipientAddress" placeholder="Enter recipient address">
+
+    <label for="amount">Amount (ETH):</label>
+    <input type="text" id="amount" placeholder="Enter amount in ETH">
+
+    <button id="sendButton">Send Ether</button>
+
+    <script>
+        async function sendEther() {
+            // MetaMask or other provider 연결 확인
+            if (typeof window.ethereum !== 'undefined') {
+                const web3 = new Web3(window.ethereum);
+                try {
+                    await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    
+                    const accounts = await web3.eth.getAccounts();
+                    const senderAddress = accounts[0]; // 현재 MetaMask에 연결된 계정
+                    const recipientAddress = document.getElementById('recipientAddress').value;
+                    const amountInEther = document.getElementById('amount').value;
+
+                    const amountInWei = web3.utils.toWei(amountInEther, 'ether'); // ETH를 Wei 단위로 변환
+
+                    // 트랜잭션 보내기
+                    const transaction = await web3.eth.sendTransaction({
+                        from: senderAddress,
+                        to: recipientAddress,
+                        value: amountInWei
+                    });
+
+                    console.log('Transaction successful!', transaction);
+                } catch (error) {
+                    console.error('Error sending Ether:', error);
+                }
+            } else {
+                alert('Please install MetaMask!');
+            }
+        }
+
+        document.getElementById('sendButton').addEventListener('click', sendEther);
+    </script>
+</body>
+</html>

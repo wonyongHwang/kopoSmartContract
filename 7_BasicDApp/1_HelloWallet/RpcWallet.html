@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send Ether DApp</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+</head>
+<body>
+    <h1>Send Ether to Address</h1>
+
+    <h3>Send Ether</h3>
+    <form id="sendEtherForm">
+        <input type="text" id="recipientAddress" placeholder="Recipient Address" required>
+        <input type="text" id="amount" placeholder="Amount in ETH" required>
+        <button type="submit">Send Ether</button>
+    </form>
+
+    <script>
+        let web3;
+        
+        const infuraProjectId = '/* 인퓨라 API 키 */'; // Infura Project ID를 여기에 입력하세요
+
+        // Infura의 Sepolia RPC 엔드포인트 사용
+        const rpcUrl = `https://sepolia.infura.io/v3/${infuraProjectId}`;
+        const web3Provider = new Web3.providers.HttpProvider(rpcUrl);
+        web3 = new Web3(web3Provider);
+
+        const privateKey = '/* 메타마스크에서 추출한 비밀키 */';  // 여기서 사용할 개인키를 입력하세요
+        const account = web3.eth.accounts.privateKeyToAccount(privateKey);
+
+        // 이더 전송 기능
+        async function sendEther(to, amountInEther) {
+            try {
+                const tx = {
+                    from: account.address,
+                    to: to,
+                    value: web3.utils.toWei(amountInEther, 'ether'),  // 이더 단위를 Wei로 변환
+                    gas: 21000,  // 기본 이더 전송 트랜잭션에 필요한 가스 양
+                    maxPriorityFeePerGas: web3.utils.toWei('2', 'gwei'),  // 우선 수수료 설정
+                    maxFeePerGas: web3.utils.toWei('50', 'gwei'),  // 가스 당 최대 수수료 설정
+                };
+
+                // 트랜잭션 서명 및 전송
+                const signedTx = await web3.eth.accounts.signTransaction(tx, privateKey);
+                const receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
+
+                console.log('Transaction successful with receipt:', receipt);
+                alert('Ether sent successfully!');
+            } catch (error) {
+                console.error('Error sending Ether:', error);
+                alert('Error sending Ether');
+            }
+        }
+
+        // 폼 제출 핸들러
+        document.getElementById("sendEtherForm").onsubmit = async (e) => {
+            e.preventDefault();
+            const recipientAddress = document.getElementById("recipientAddress").value;
+            const amount = document.getElementById("amount").value;
+            await sendEther(recipientAddress, amount);
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voting DApp</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+</head>
+<body>
+    <h1>Voting DApp</h1>
+
+    <h3>Add Candidate</h3>
+    <form id="addCandidateForm">
+        <input type="text" id="candidateName" placeholder="Candidate Name" required>
+        <button type="submit">Add Candidate</button>
+    </form>
+
+    <h3>Candidates</h3>
+    <ul id="candidateList"></ul>
+
+    <h3>Vote for a Candidate</h3>
+    <form id="voteForm">
+        <input type="number" id="candidateIndex" placeholder="Candidate Index" required>
+        <button type="submit">Vote</button>
+    </form>
+
+    <script>
+        let web3;
+        let contract;
+        const contractAddress = '/* 배포된 컨트랙트 주소 */';  // Replace with your contract address
+        const contractABI = [ /* 여기에 컴파일된 ABI를 추가하세요 */ ];  // ABI from your compiled contract
+
+        // Web3.js를 이용한 이더리움 네트워크 연결
+        window.addEventListener('load', async () => {
+            if (typeof window.ethereum !== 'undefined') {
+                web3 = new Web3(window.ethereum);
+                await window.ethereum.request({ method: 'eth_requestAccounts' });
+
+                contract = new web3.eth.Contract(contractABI, contractAddress);
+
+                // 후보자 목록을 불러와 화면에 표시
+                await loadCandidates();
+            } else {
+                alert('Please install MetaMask!');
+            }
+        });
+
+        // 후보자 목록 불러오기
+        async function loadCandidates() {
+            const candidates = await contract.methods.getCandidates().call();
+            const candidateList = document.getElementById("candidateList");
+            candidateList.innerHTML = '';
+
+            candidates.forEach((candidate, index) => {
+                const li = document.createElement('li');
+                li.innerText = `Index: ${index} | Name: ${candidate}`;
+                candidateList.appendChild(li);
+            });
+        }
+
+        // 후보자 추가 기능
+        document.getElementById('addCandidateForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const candidateName = document.getElementById('candidateName').value;
+            const accounts = await web3.eth.getAccounts();
+            await contract.methods.addCandidate(candidateName).send({ from: accounts[0] });
+            await loadCandidates();  // 후보자 목록 다시 불러오기
+        };
+
+        // 투표 기능
+        document.getElementById('voteForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const candidateIndex = document.getElementById('candidateIndex').value;
+            const accounts = await web3.eth.getAccounts();
+            await contract.methods.vote(candidateIndex).send({ from: accounts[0] });
+            alert('Vote successful!');
+        };
+    </script>
+</body>
+</html>
