@@ -35,7 +35,7 @@
                 const tx = {
                     from: account.address,
                     to: to,
-                    value: web3.utils.toWei(amountInEther, 'ether'),  // 이더 단위를 Wei로 변환
+                    value: web3.utils.toWei(amountInEther, 'ether'),  // 이더 
                     gas: 21000,  // 기본 이더 전송 트랜잭션에 필요한 가스 양
                     maxPriorityFeePerGas: web3.utils.toWei('2', 'gwei'),  // 우선 수수료 설정
                     maxFeePerGas: web3.utils.toWei('50', 'gwei'),  // 가스 당 최대 수수료 설정

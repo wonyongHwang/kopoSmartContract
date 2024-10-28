@@ -30,7 +30,7 @@
                     const recipientAddress = document.getElementById('recipientAddress').value;
                     const amountInEther = document.getElementById('amount').value;
 
-                    const amountInWei = web3.utils.toWei(amountInEther, 'ether'); // ETH를 Wei 단위로 변환
+                    const amountInWei = web3.utils.toWei(amountInEther, 'ether'); // ETH
 
                     // 트랜잭션 보내기
                     const transaction = await web3.eth.sendTransaction({
