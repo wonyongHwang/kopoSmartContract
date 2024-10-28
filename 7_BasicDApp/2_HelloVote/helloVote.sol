@@ -8,6 +8,9 @@ contract Voting {
         uint voteCount;
     }
 
+    // 소유자 주소
+    address public owner;
+
     // 후보자 목록 및 투표 여부를 기록
     mapping(address => bool) public voters;  // 투표자의 투표 여부
     Candidate[] public candidates;  // 후보자 목록
@@ -15,8 +18,14 @@ contract Voting {
     // 이벤트
     event VoteCast(address voter, uint candidateIndex);
 
-    // 후보자를 추가하는 함수
+    // 소유자 설정 (컨트랙트 배포 시)
+    constructor() {
+        owner = msg.sender;
+    }
+
+    // 후보자를 추가하는 함수 (소유자만 가능)
     function addCandidate(string memory _name) public {
+        require(msg.sender == owner, "Only the contract owner can add candidates.");  // 소유자만 호출 가능
         candidates.push(Candidate(_name, 0));
     }
 

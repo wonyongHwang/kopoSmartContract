@@ -5,76 +5,358 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Voting DApp</title>
     <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <style>
+        .candidate-item {
+            cursor: pointer;
+            padding: 10px;
+            border: 1px solid #ccc;
+            margin: 5px;
+            list-style: none;
+        }
+        .candidate-item:hover {
+            background-color: #f0f0f0;
+        }
+        #selectedCandidate {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        #voteButton, #addCandidateButton {
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Voting DApp</h1>
 
-    <h3>Add Candidate</h3>
-    <form id="addCandidateForm">
-        <input type="text" id="candidateName" placeholder="Candidate Name" required>
-        <button type="submit">Add Candidate</button>
-    </form>
+    <h1>Decentralized Voting DApp</h1>
 
-    <h3>Candidates</h3>
+    <!-- 메타마스크 연결 상태 -->
+    <div id="walletStatus">Checking MetaMask...</div>
+
+    <!-- 투표 여부 표시 -->
+    <div id="votingStatus"></div>
+
+    <!-- 후보자 추가 (소유자만 가능) -->
+    <div id="addCandidateSection" style="display:none;">
+        <h3>Add a Candidate</h3>
+        <input type="text" id="newCandidateName" placeholder="Candidate Name">
+        <button id="addCandidateButton" onclick="addCandidate()">Add Candidate</button>
+    </div>
+
+    <!-- 후보자 목록 및 득표수 표시 -->
+    <h2>Available Candidates</h2>
     <ul id="candidateList"></ul>
 
-    <h3>Vote for a Candidate</h3>
-    <form id="voteForm">
-        <input type="number" id="candidateIndex" placeholder="Candidate Index" required>
-        <button type="submit">Vote</button>
-    </form>
+    <!-- 선택된 후보자 표시 및 투표 버튼 -->
+    <div id="selectedCandidateSection">
+        <p id="selectedCandidate">No candidate selected.</p>
+        <button id="voteButton" onclick="handleVote()" disabled>Vote</button>
+    </div>
+
+    <!-- 결과 표시 -->
+    <div id="result"></div>
 
     <script>
+        // Web3 설정 및 스마트 컨트랙트 연결
         let web3;
-        let contract;
-        const contractAddress = '/* 배포된 컨트랙트 주소 */';  // Replace with your contract address
-        const contractABI = [ /* 여기에 컴파일된 ABI를 추가하세요 */ ];  // ABI from your compiled contract
-
-        // Web3.js를 이용한 이더리움 네트워크 연결
-        window.addEventListener('load', async () => {
-            if (typeof window.ethereum !== 'undefined') {
-                web3 = new Web3(window.ethereum);
-                await window.ethereum.request({ method: 'eth_requestAccounts' });
-
-                contract = new web3.eth.Contract(contractABI, contractAddress);
-
-                // 후보자 목록을 불러와 화면에 표시
-                await loadCandidates();
-            } else {
-                alert('Please install MetaMask!');
+        const contractABI = [
+    {
+        "inputs": [
+            {
+                "internalType": "string",
+                "name": "_name",
+                "type": "string"
             }
-        });
+        ],
+        "name": "addCandidate",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "_candidateIndex",
+                "type": "uint256"
+            }
+        ],
+        "name": "vote",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "address",
+                "name": "voter",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "candidateIndex",
+                "type": "uint256"
+            }
+        ],
+        "name": "VoteCast",
+        "type": "event"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "name": "candidates",
+        "outputs": [
+            {
+                "internalType": "string",
+                "name": "name",
+                "type": "string"
+            },
+            {
+                "internalType": "uint256",
+                "name": "voteCount",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "getCandidates",
+        "outputs": [
+            {
+                "internalType": "string[]",
+                "name": "",
+                "type": "string[]"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "_candidateIndex",
+                "type": "uint256"
+            }
+        ],
+        "name": "getCandidateVotes",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "owner",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "name": "voters",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    }
+];
+        const contractAddress = "0xDd9cad2fCc28A126E9e4bd1a8db7803dCa523CFB";
+        let votingContract;
+        let selectedCandidateIndex = null;
+        let currentAccount = null;
+        let hasVoted = false;  // 이미 투표 여부 저장
+        let contractOwner = null;  // 컨트랙트 소유자
 
-        // 후보자 목록 불러오기
-        async function loadCandidates() {
-            const candidates = await contract.methods.getCandidates().call();
-            const candidateList = document.getElementById("candidateList");
-            candidateList.innerHTML = '';
+        // 메타마스크가 설치되어 있는지 확인
+        async function checkMetaMask() {
+            if (typeof window.ethereum !== 'undefined') {
+                document.getElementById('walletStatus').textContent = "MetaMask detected!";
+                web3 = new Web3(window.ethereum);
 
-            candidates.forEach((candidate, index) => {
-                const li = document.createElement('li');
-                li.innerText = `Index: ${index} | Name: ${candidate}`;
-                candidateList.appendChild(li);
-            });
+                // MetaMask 연결 요청
+                try {
+                    await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    currentAccount = await web3.eth.getAccounts();
+                    currentAccount = currentAccount[0];
+                    document.getElementById('walletStatus').textContent = `Connected with account: ${currentAccount}`;
+
+                    // 스마트 컨트랙트 인스턴스 생성
+                    votingContract = new web3.eth.Contract(contractABI, contractAddress);
+
+                    // 컨트랙트 소유자 가져오기
+                    contractOwner = await votingContract.methods.owner().call();
+
+                    // 현재 계정이 컨트랙트 소유자인지 확인
+                    if (currentAccount.toLowerCase() === contractOwner.toLowerCase()) {
+                        document.getElementById('addCandidateSection').style.display = "block";  // 소유자만 후보자 추가 가능
+                    }
+
+                    // 후보자 목록 및 투표 여부 불러오기
+                    await getCandidateList();
+                    await checkIfVoted(currentAccount);
+                } catch (error) {
+                    console.error("User denied MetaMask connection:", error);
+                    document.getElementById('walletStatus').textContent = "Please connect MetaMask to use this DApp.";
+                }
+            } else {
+                document.getElementById('walletStatus').textContent = "MetaMask is not installed. Please install MetaMask to use this DApp.";
+            }
         }
 
-        // 후보자 추가 기능
-        document.getElementById('addCandidateForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const candidateName = document.getElementById('candidateName').value;
-            const accounts = await web3.eth.getAccounts();
-            await contract.methods.addCandidate(candidateName).send({ from: accounts[0] });
-            await loadCandidates();  // 후보자 목록 다시 불러오기
-        };
+        // 현재 계정에서 이미 투표를 했는지 확인
+        async function checkIfVoted(account) {
+            hasVoted = await votingContract.methods.voters(account).call();
+            const votingStatusElement = document.getElementById('votingStatus');
+            const voteButton = document.getElementById('voteButton');
 
-        // 투표 기능
-        document.getElementById('voteForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const candidateIndex = document.getElementById('candidateIndex').value;
-            const accounts = await web3.eth.getAccounts();
-            await contract.methods.vote(candidateIndex).send({ from: accounts[0] });
-            alert('Vote successful!');
-        };
+            if (hasVoted) {
+                votingStatusElement.textContent = "You have already voted.";
+                voteButton.disabled = true;  // Vote 버튼 비활성화
+            } else {
+                votingStatusElement.textContent = "You have not voted yet. You can vote.";
+            }
+        }
+
+        // 후보자 목록 및 득표수 불러오기 함수
+        async function getCandidateList() {
+            try {
+                const candidates = await votingContract.methods.getCandidates().call();
+                const candidateListElement = document.getElementById("candidateList");
+                candidateListElement.innerHTML = "";
+
+                // 후보자 목록을 UI에 추가 및 득표수 가져오기
+                for (let i = 0; i < candidates.length; i++) {
+                    const votes = await votingContract.methods.getCandidateVotes(i).call();
+                    const li = document.createElement("li");
+                    li.textContent = `#${i}: ${candidates[i]} - Votes: ${votes}`;
+                    li.classList.add('candidate-item');
+                    li.onclick = function() {
+                        selectCandidate(i, candidates[i]);
+                    };
+                    candidateListElement.appendChild(li);
+                }
+            } catch (error) {
+                console.error("Error fetching candidates: ", error);
+            }
+        }
+
+        // 후보자를 선택하면 화면에 표시
+        function selectCandidate(candidateIndex, candidateName) {
+            selectedCandidateIndex = candidateIndex;  // 선택된 후보자 인덱스 저장
+            document.getElementById('selectedCandidate').textContent = `Selected Candidate: ${candidateName}`;
+            const voteButton = document.getElementById('voteButton');
+
+            // 이미 투표한 경우 버튼 비활성화 유지
+            if (!hasVoted) {
+                voteButton.disabled = false;  // "투표" 버튼 활성화
+            }
+        }
+
+        // 사용자가 투표 버튼을 눌렀을 때의 처리
+        function handleVote() {
+            if (hasVoted) {
+                alert("이미 투표했습니다.");  // 이미 투표했으면 알림
+                return;
+            }
+
+            const userConfirmed = window.confirm("투표 하시겠습니까?");
+            if (userConfirmed) {
+                voteForCandidate();
+            } else {
+                document.getElementById("result").textContent = "Vote cancelled.";
+            }
+        }
+
+        // 선택한 후보자에게 투표하는 함수
+        async function voteForCandidate() {
+            if (selectedCandidateIndex === null) {
+                document.getElementById("result").textContent = "No candidate selected.";
+                return;
+            }
+
+            const accountHasVoted = await votingContract.methods.voters(currentAccount).call();
+            if (accountHasVoted) {
+                alert("이미 투표했습니다.");  // 이미 투표했으면 알림
+                return;
+            }
+
+            try {
+                await votingContract.methods.vote(selectedCandidateIndex).send({ from: currentAccount });
+                document.getElementById("result").textContent = "Vote successful!";
+                document.getElementById('voteButton').disabled = true;  // 투표 후 버튼 비활성화
+                hasVoted = true;  // 투표 상태 업데이트
+                // 투표 후 화면을 새로고침
+
+                setTimeout(() => location.reload(), 2000);
+                
+            } catch (error) {
+                console.error("Error voting: ", error);
+                document.getElementById("result").textContent = "Vote failed. " + error.message;
+            }
+        }
+
+        // 후보자를 추가하는 함수 (소유자만 가능)
+        async function addCandidate() {
+            const candidateName = document.getElementById('newCandidateName').value;
+            if (!candidateName) {
+                alert("Please enter a candidate name.");
+                return;
+            }
+
+            try {
+                await votingContract.methods.addCandidate(candidateName).send({ from: currentAccount });
+                alert("Candidate added successfully!");
+                document.getElementById('newCandidateName').value = '';  // 입력 필드 초기화
+                await getCandidateList();  // 후보자 목록 갱신
+            } catch (error) {
+                console.error("Error adding candidate: ", error);
+                alert("Failed to add candidate. " + error.message);
+            }
+        }
+
+        // 페이지 로드 시 메타마스크 확인 및 연결
+        window.onload = async function() {
+            await checkMetaMask();
+        }
     </script>
+
 </body>
 </html>
