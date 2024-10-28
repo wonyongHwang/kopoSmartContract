@@ -3,34 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <title>ICO DApp</title>
     <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
 </head>
 <body>
-    <h1>ICO DApp</h1>
+   <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <h1>ICO DApp</h1>
+            </div>
+        </div>
 
-    <!-- MetaMask 연결 버튼 -->
-    <button id="connectButton">Connect MetaMask</button>
-    <p id="accountDisplay">Not connected</p>
+        <!-- MetaMask 연결 버튼 -->
+        <div class="row justify-content-center mt-4">
+            <div class="col-md-6 text-center">
+                <button id="connectButton" class="btn btn-primary btn-lg">Connect MetaMask</button>
+                <p id="accountDisplay" class="mt-3">Not connected</p>
+            </div>
+        </div>
 
-    <!-- 이더 전송으로 토큰 구매 -->
-    <h3>Buy Tokens</h3>
-    <form id="buyTokensForm">
-        <input type="text" id="etherAmount" placeholder="Amount of Ether" required>
-        <button type="submit">Buy Tokens</button>
-    </form>
+        <!-- 이더 전송으로 토큰 구매 -->
+        <div class="row justify-content-center mt-4">
+            <div class="col-md-6">
+                <h3>Buy Tokens (Wei)</h3>
+                <form id="buyTokensForm" class="input-group">
+                    <input type="text" id="etherAmount" class="form-control" placeholder="Amount of Wei" required>
+                    <button type="submit" class="btn btn-success">Buy Tokens</button>
+                </form>
+            </div>
+        </div>
 
-    <!-- 토큰 잔액 확인 -->
-    <h3>Check Token Balance</h3>
-    <button id="checkBalanceButton">Check Balance</button>
-    <p id="balanceOutput"></p>
+        <!-- 토큰 잔액 확인 -->
+        <div class="row justify-content-center mt-4">
+            <div class="col-md-6 text-center">
+                <h3>Check Token Balance</h3>
+                <button id="checkBalanceButton" class="btn btn-info">Check Balance</button>
+                <p id="balanceOutput" class="mt-3"></p>
+            </div>
+        </div>
+    </div>
+
 
     <!-- 토큰 승인 (Approve) 기능 추가 -->
-    <h3>Approve Tokens for ICO</h3>
+    <!-- <h3>Approve Tokens for ICO</h3>
     <form id="approveTokensForm">
         <input type="text" id="tokenAmount" placeholder="Amount of Tokens" required>
         <button type="submit">Approve Tokens</button>
-    </form>
+    </form> -->
 
     <script>
         let web3;
@@ -38,10 +61,325 @@
         let tokenContract;
         let accounts;
 
-        const icoContractAddress = '/* ICO 컨트랙트 주소 */';  // ICO 컨트랙트 주소
-        const icoContractABI = [ /* ICO 컨트랙트 ABI */ ];  // ICO 컨트랙트의 ABI
-        const tokenContractAddress = '/* 토큰 컨트랙트 주소 */';  // Token 컨트랙트 주소
-        const tokenContractABI = [ /* Token 컨트랙트 ABI */ ];  // Token 컨트랙트의 ABI
+        const icoContractAddress = '0xcFD8A7E6BB9A3BeA893f6f79A9AA2b2cd310bC7f';  // ICO 컨트랙트 주소
+        const icoContractABI = [
+    {
+        "inputs": [
+            {
+                "internalType": "contract Token",
+                "name": "_token",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "address",
+                "name": "buyer",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+            }
+        ],
+        "name": "BoughtTokens",
+        "type": "event"
+    },
+    {
+        "inputs": [],
+        "name": "withdraw",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "stateMutability": "payable",
+        "type": "receive"
+    },
+    {
+        "inputs": [],
+        "name": "owner",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "rate",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "token",
+        "outputs": [
+            {
+                "internalType": "contract Token",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    }
+];  // ICO 컨트랙트의 ABI
+        const tokenContractAddress = '0x09EFF6177B147EF774c00Aa29AC9707CBe1a04b3';  // Token 컨트랙트 주소
+        const tokenContractABI = [
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "_initialSupply",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "owner",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "spender",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "value",
+                "type": "uint256"
+            }
+        ],
+        "name": "Approval",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "from",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "to",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "value",
+                "type": "uint256"
+            }
+        ],
+        "name": "Transfer",
+        "type": "event"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "name": "allowance",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "_spender",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "_value",
+                "type": "uint256"
+            }
+        ],
+        "name": "approve",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "success",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "name": "balanceOf",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "decimals",
+        "outputs": [
+            {
+                "internalType": "uint8",
+                "name": "",
+                "type": "uint8"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "name",
+        "outputs": [
+            {
+                "internalType": "string",
+                "name": "",
+                "type": "string"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "symbol",
+        "outputs": [
+            {
+                "internalType": "string",
+                "name": "",
+                "type": "string"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "totalSupply",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "_to",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "_value",
+                "type": "uint256"
+            }
+        ],
+        "name": "transfer",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "success",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "_from",
+                "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "_to",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "_value",
+                "type": "uint256"
+            }
+        ],
+        "name": "transferFrom",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "success",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    }
+];  // Token 컨트랙트의 ABI
 
         // MetaMask 연결
         async function connectMetaMask() {
@@ -70,12 +408,15 @@
 
         // 이더를 전송하여 토큰을 구매하는 함수
         async function buyTokens(etherAmount) {
-            const value = web3.utils.toWei(etherAmount, 'ether');
+            //const value = web3.utils.toWei(etherAmount, 'ether');
+            const value = etherAmount; 
+            console.log("value "+value+" wei");
             // 컨트랙트로 단순히 이더를 전송하여 receive() 함수 호출
             await web3.eth.sendTransaction({
                 from: accounts[0],
                 to: icoContractAddress,
-                value: value
+                value: value,
+                gas: 200000 // 적절한 가스 한도를 설정
             });
             alert('Tokens purchased successfully!');
         }
@@ -106,12 +447,12 @@
             await checkBalance();
         };
 
-        // 토큰 승인 폼 제출 핸들러
-        document.getElementById('approveTokensForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const tokenAmount = document.getElementById('tokenAmount').value;
-            await approveTokensForICO(tokenAmount);
-        };
+        // // 토큰 승인 폼 제출 핸들러
+        // document.getElementById('approveTokensForm').onsubmit = async (e) => {
+        //     e.preventDefault();
+        //     const tokenAmount = document.getElementById('tokenAmount').value;
+        //     await approveTokensForICO(tokenAmount);
+        // };
     </script>
 </body>
 </html>
