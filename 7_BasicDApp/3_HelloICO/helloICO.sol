@@ -46,7 +46,7 @@ contract Token {
 contract ICO {
     Token public token;
     address public owner;
-    uint256 public rate = 100;  // 1 이더당 100 토큰
+    uint256 public rate = 100;  // 1 웨이 : 100 토큰
 
     event BoughtTokens(address buyer, uint256 amount);
 
