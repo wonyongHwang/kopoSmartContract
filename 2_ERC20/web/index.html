@@ -668,13 +668,13 @@
   }
 ];
 
-        const tokenAddress = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"; // 배포된 ERC20PermitToken의 주소
+        const tokenAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"; // 배포된 ERC20PermitToken의 주소
 
         // Web3 인스턴스 생성 (WebSocket 사용)
         // const web3 = new Web3(new Web3.providers.WebsocketProvider("ws://localhost:8545"));
-        var web3 = new Web3('ws://localhost:8545');
+        // var web3 = new Web3('ws://localhost:8545');
 
-        // const web3 = new Web3("http://localhost:8545");
+         const web3 = new Web3("http://localhost:8545");
 
         const tokenContract = new web3.eth.Contract(tokenABI, tokenAddress);
 
@@ -787,7 +787,7 @@
                 };
 
                 const privateKey = '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80';
-                const provider = new ethers.providers.JsonRpcProvider("ws://localhost:8545");
+                const provider = new ethers.providers.JsonRpcProvider("http://localhost:8545");
                 const wallet = new ethers.Wallet(privateKey, provider);
                 const signer = wallet.connect(provider);
 
