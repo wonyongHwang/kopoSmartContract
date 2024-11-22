@@ -1,183 +1,1168 @@
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.24;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERC1400 Token Interaction</title>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.0/dist/ethers.umd.min.js"></script>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container py-5">
+        <h1 class="text-center mb-4">ERC1400 Token Interaction</h1>
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+        <!-- Whitelist Management -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Whitelist Management</h5>
+                <div class="mb-3">
+                    <label for="walletSelect" class="form-label">Select Wallet Address:</label>
+                    <select id="walletSelect" class="form-select"></select>
+                </div>
+                <button onclick="addWhitelisted()" class="btn btn-primary w-100 mb-2">Add Selected to Whitelist</button>
+            </div>
+        </div>
 
-contract ERC1400 is ERC20, Ownable {
+        <!-- Token Operations -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Token Operations</h5>
+                <button onclick="issueTokens()" class="btn btn-success w-100 mb-2">Issue Tokens</button>
+                <button onclick="checkCanTransfer()" class="btn btn-info w-100 mb-2">Check Can Transfer & Transfer</button>
+                <button onclick="issueTokensByPartition()" class="btn btn-warning w-100 mb-2">Issue Tokens by Partition</button>
+                <button onclick="checkCanTransferByPartition()" class="btn btn-secondary w-100 mb-2">Check Can Transfer by Partition</button>
+                <button onclick="redeemTokens()" class="btn btn-danger w-100 mb-2">Redeem Tokens</button>
+            </div>
+        </div>
 
-    // Partitioned balances (파티션 별로 토큰 보유량 관리)
-    mapping(bytes32 => mapping(address => uint256)) private _partitionBalances;
+        <!-- Update Balances -->
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Update Balances</h5>
+                <button onclick="updateBalances()" class="btn btn-dark w-100">Update Token Balances</button>
+            </div>
+        </div>
 
-    // KYC/Whitelist management (KYC를 통한 화이트리스트 관리)
-    mapping(address => bool) private _whitelisted;
+        <!-- Connected Wallet Addresses -->
+        <h2 class="mt-5">Connected Wallet Addresses</h2>
+        <ul id="walletList" class="list-group">
+            <!-- Wallet addresses will be displayed here -->
+        </ul>
+    </div>
 
-    // Document management
-    struct Document {
-        string uri;
-        bytes32 hash;
+    <script>
+        const provider = new ethers.providers.JsonRpcProvider("http://127.0.0.1:8545");
+        const privateKey = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";  // Hardhat에서 가져온 프라이빗 키
+        const wallet = new ethers.Wallet(privateKey, provider);
+
+        const contractABI = [
+    {
+        "inputs": [
+            {
+                "internalType": "string",
+                "name": "name",
+                "type": "string"
+            },
+            {
+                "internalType": "string",
+                "name": "symbol",
+                "type": "string"
+            },
+            {
+                "internalType": "address[]",
+                "name": "controllers",
+                "type": "address[]"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "spender",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "allowance",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "needed",
+                "type": "uint256"
+            }
+        ],
+        "name": "ERC20InsufficientAllowance",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "sender",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "balance",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "needed",
+                "type": "uint256"
+            }
+        ],
+        "name": "ERC20InsufficientBalance",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "approver",
+                "type": "address"
+            }
+        ],
+        "name": "ERC20InvalidApprover",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "receiver",
+                "type": "address"
+            }
+        ],
+        "name": "ERC20InvalidReceiver",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "sender",
+                "type": "address"
+            }
+        ],
+        "name": "ERC20InvalidSender",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "spender",
+                "type": "address"
+            }
+        ],
+        "name": "ERC20InvalidSpender",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "owner",
+                "type": "address"
+            }
+        ],
+        "name": "OwnableInvalidOwner",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+            }
+        ],
+        "name": "OwnableUnauthorizedAccount",
+        "type": "error"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "owner",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "spender",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "value",
+                "type": "uint256"
+            }
+        ],
+        "name": "Approval",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "address",
+                "name": "controller",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "from",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "to",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "value",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "bytes",
+                "name": "data",
+                "type": "bytes"
+            },
+            {
+                "indexed": false,
+                "internalType": "bytes",
+                "name": "operatorData",
+                "type": "bytes"
+            }
+        ],
+        "name": "ControllerTransfer",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "bytes32",
+                "name": "partition",
+                "type": "bytes32"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "to",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "value",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "bytes",
+                "name": "data",
+                "type": "bytes"
+            }
+        ],
+        "name": "IssuedByPartition",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "previousOwner",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "newOwner",
+                "type": "address"
+            }
+        ],
+        "name": "OwnershipTransferred",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "bytes32",
+                "name": "partition",
+                "type": "bytes32"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "from",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "value",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "bytes",
+                "name": "data",
+                "type": "bytes"
+            }
+        ],
+        "name": "RedeemedByPartition",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "from",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "to",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "value",
+                "type": "uint256"
+            }
+        ],
+        "name": "Transfer",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "bytes32",
+                "name": "partition",
+                "type": "bytes32"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "from",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "to",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "value",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "bytes",
+                "name": "data",
+                "type": "bytes"
+            }
+        ],
+        "name": "TransferredByPartition",
+        "type": "event"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+            }
+        ],
+        "name": "addWhitelisted",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "owner",
+                "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "spender",
+                "type": "address"
+            }
+        ],
+        "name": "allowance",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "spender",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "value",
+                "type": "uint256"
+            }
+        ],
+        "name": "approve",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+            }
+        ],
+        "name": "balanceOf",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "partition",
+                "type": "bytes32"
+            },
+            {
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+            }
+        ],
+        "name": "balanceOfByPartition",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "to",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "value",
+                "type": "uint256"
+            }
+        ],
+        "name": "canTransfer",
+        "outputs": [
+            {
+                "components": [
+                    {
+                        "internalType": "bytes32",
+                        "name": "code",
+                        "type": "bytes32"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "message",
+                        "type": "string"
+                    }
+                ],
+                "internalType": "struct ERC1400.TransferStatus",
+                "name": "",
+                "type": "tuple"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "partition",
+                "type": "bytes32"
+            },
+            {
+                "internalType": "address",
+                "name": "to",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "value",
+                "type": "uint256"
+            }
+        ],
+        "name": "canTransferByPartition",
+        "outputs": [
+            {
+                "components": [
+                    {
+                        "internalType": "bytes32",
+                        "name": "code",
+                        "type": "bytes32"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "message",
+                        "type": "string"
+                    }
+                ],
+                "internalType": "struct ERC1400.TransferStatus",
+                "name": "",
+                "type": "tuple"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "from",
+                "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "to",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "value",
+                "type": "uint256"
+            },
+            {
+                "internalType": "bytes",
+                "name": "data",
+                "type": "bytes"
+            },
+            {
+                "internalType": "bytes",
+                "name": "operatorData",
+                "type": "bytes"
+            }
+        ],
+        "name": "controllerTransfer",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "decimals",
+        "outputs": [
+            {
+                "internalType": "uint8",
+                "name": "",
+                "type": "uint8"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "name",
+                "type": "bytes32"
+            }
+        ],
+        "name": "getDocument",
+        "outputs": [
+            {
+                "internalType": "string",
+                "name": "uri",
+                "type": "string"
+            },
+            {
+                "internalType": "bytes32",
+                "name": "documentHash",
+                "type": "bytes32"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "controller",
+                "type": "address"
+            }
+        ],
+        "name": "isController",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+            }
+        ],
+        "name": "isWhitelisted",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "to",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "value",
+                "type": "uint256"
+            },
+            {
+                "internalType": "bytes",
+                "name": "data",
+                "type": "bytes"
+            }
+        ],
+        "name": "issue",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "partition",
+                "type": "bytes32"
+            },
+            {
+                "internalType": "address",
+                "name": "to",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "value",
+                "type": "uint256"
+            },
+            {
+                "internalType": "bytes",
+                "name": "data",
+                "type": "bytes"
+            }
+        ],
+        "name": "issueByPartition",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "name",
+        "outputs": [
+            {
+                "internalType": "string",
+                "name": "",
+                "type": "string"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "owner",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "value",
+                "type": "uint256"
+            },
+            {
+                "internalType": "bytes",
+                "name": "data",
+                "type": "bytes"
+            }
+        ],
+        "name": "redeem",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+            }
+        ],
+        "name": "removeWhitelisted",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "renounceOwnership",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "name",
+                "type": "bytes32"
+            },
+            {
+                "internalType": "string",
+                "name": "uri",
+                "type": "string"
+            },
+            {
+                "internalType": "bytes32",
+                "name": "documentHash",
+                "type": "bytes32"
+            }
+        ],
+        "name": "setDocument",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "symbol",
+        "outputs": [
+            {
+                "internalType": "string",
+                "name": "",
+                "type": "string"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "totalSupply",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "to",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "value",
+                "type": "uint256"
+            }
+        ],
+        "name": "transfer",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "partition",
+                "type": "bytes32"
+            },
+            {
+                "internalType": "address",
+                "name": "to",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "value",
+                "type": "uint256"
+            },
+            {
+                "internalType": "bytes",
+                "name": "data",
+                "type": "bytes"
+            }
+        ],
+        "name": "transferByPartition",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "from",
+                "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "to",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "value",
+                "type": "uint256"
+            }
+        ],
+        "name": "transferFrom",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "newOwner",
+                "type": "address"
+            }
+        ],
+        "name": "transferOwnership",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
     }
-    mapping(bytes32 => Document) private _documents;
+];  // ERC1400 컨트랙트 ABI
+        const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";  // 배포된 스마트 컨트랙트 주소
+        const erc1400Contract = new ethers.Contract(contractAddress, contractABI, wallet);
 
-    // Controller list for forced transfers
-    address[] private _controllers;
+        let walletAddresses = [];
+        const partitions = [ethers.utils.formatBytes32String("Partition 1"),/* ethers.utils.formatBytes32String("Partition 2")*/];
 
-    // EIP-1066 Transfer Status 구조체 정의
-    struct TransferStatus {
-        bytes32 code;
-        string message;
-    }
 
-    // Events for partition transfers
-    event IssuedByPartition(bytes32 indexed partition, address indexed to, uint256 value, bytes data);
-    event RedeemedByPartition(bytes32 indexed partition, address indexed from, uint256 value, bytes data);
-    event TransferredByPartition(bytes32 indexed partition, address indexed from, address indexed to, uint256 value, bytes data);
+        // 페이지 로드 시 지갑 주소를 가져와서 배열에 저장
+        window.onload = async function () {
+            walletAddresses = await getWalletAddresses();
+            displayWalletAddresses();
+        };
 
-    // Controller events for forced transfers (ERC-1644)
-    event ControllerTransfer(address controller, address indexed from, address indexed to, uint256 value, bytes data, bytes operatorData);
-
-    constructor(
-        string memory name,
-        string memory symbol,
-        address[] memory controllers
-    ) ERC20(name, symbol) Ownable(msg.sender) {
-        _controllers = controllers;
-    }
-
-    // ERC-1594: Issue tokens
-    function issue(address to, uint256 value, bytes calldata data) external onlyOwner {
-        require(isWhitelisted(to), "Recipient not KYC verified");
-        _mint(to, value);
-        emit IssuedByPartition("", to, value, data);  // Using an empty partition for general issuance
-    }
-
-    // ERC-1594: Redeem tokens
-    function redeem(uint256 value, bytes calldata data) external {
-        _burn(msg.sender, value);
-        emit RedeemedByPartition("", msg.sender, value, data);  // Using an empty partition for general redemption
-    }
-
-    // ERC-1410: Issue tokens to a specific partition
-    // data : 발행의 이유, 문서 참조, 또는 규제 준수를 위한 기타 메타데이터 등
-    function issueByPartition(bytes32 partition, address to, uint256 value, bytes calldata data) external onlyOwner {
-        require(isWhitelisted(to), "Recipient not KYC verified");
-        _partitionBalances[partition][to] += value;
-        _mint(to, value);
-        emit IssuedByPartition(partition, to, value, data);
-    }
-
-    // ERC-1410: Transfer tokens within a specific partition
-    function transferByPartition(bytes32 partition, address to, uint256 value, bytes calldata data) external {
-        require(isWhitelisted(msg.sender), "Sender not KYC verified");
-        require(isWhitelisted(to), "Recipient not KYC verified");
-        require(_partitionBalances[partition][msg.sender] >= value, "Insufficient balance in this partition");
-
-        _partitionBalances[partition][msg.sender] -= value;
-        _partitionBalances[partition][to] += value;
-        _transfer(msg.sender, to, value);
-        emit TransferredByPartition(partition, msg.sender, to, value, data);
-    }
-
-    // ERC-1644: Forced transfer by a controller
-    function controllerTransfer(
-        address from,
-        address to,
-        uint256 value,
-        bytes calldata data,
-        bytes calldata operatorData
-    ) external {
-        require(isController(msg.sender), "Caller is not a controller");
-        _transfer(from, to, value);
-        emit ControllerTransfer(msg.sender, from, to, value, data, operatorData);
-    }
-
-    // ERC-1643: Set document
-    function setDocument(bytes32 name, string calldata uri, bytes32 documentHash) external onlyOwner {
-        _documents[name] = Document({uri: uri, hash: documentHash});
-    }
-
-    // ERC-1643: Get document
-    function getDocument(bytes32 name) external view returns (string memory uri, bytes32 documentHash) {
-        Document memory doc = _documents[name];
-        return (doc.uri, doc.hash);
-    }
-
-    // ERC-1410: Get balance in a specific partition
-    function balanceOfByPartition(bytes32 partition, address account) external view returns (uint256) {
-        return _partitionBalances[partition][account];
-    }
-
-    // EIP-1066 상태 코드 정의
-    function getSuccessStatus() private pure returns (TransferStatus memory) {
-        return TransferStatus(bytes32("0x51"), "Transfer successful");
-    }
-
-    function getSenderKYCErrorStatus() private pure returns (TransferStatus memory) {
-        return TransferStatus(bytes32("0xA0"), "Sender not KYC verified");
-    }
-
-    function getRecipientKYCErrorStatus() private pure returns (TransferStatus memory) {
-        return TransferStatus(bytes32("0xA1"), "Recipient not KYC verified");
-    }
-
-    function getInsufficientBalanceErrorStatus() private pure returns (TransferStatus memory) {
-        return TransferStatus(bytes32("0xA2"), "Insufficient balance");
-    }
-
-    function getPartitionInsufficientBalanceErrorStatus() private pure returns (TransferStatus memory) {
-        return TransferStatus(bytes32("0xA2"), "Insufficient balance in partition");
-    }
-
-    // ERC-1594: Check if transfer is possible (canTransfer)
-    function canTransfer(address to, uint256 value) public view returns (TransferStatus memory) {
-        if (!isWhitelisted(msg.sender)) {
-            return getSenderKYCErrorStatus();
-        }
-        if (!isWhitelisted(to)) {
-            return getRecipientKYCErrorStatus();
-        }
-        if (balanceOf(msg.sender) < value) {
-            return getInsufficientBalanceErrorStatus();
-        }
-        return getSuccessStatus();
-    }
-
-    // ERC-1594: Check if transfer by partition is possible (canTransferByPartition)
-    function canTransferByPartition(bytes32 partition, address to, uint256 value) public view returns (TransferStatus memory) {
-        if (!isWhitelisted(msg.sender)) {
-            return getSenderKYCErrorStatus();
-        }
-        if (!isWhitelisted(to)) {
-            return getRecipientKYCErrorStatus();
-        }
-        if (_partitionBalances[partition][msg.sender] < value) {
-            return getPartitionInsufficientBalanceErrorStatus();
-        }
-        return getSuccessStatus();
-    }
-
-    // Add an address to the whitelist (KYC verified)
-    function addWhitelisted(address account) external onlyOwner {
-        _whitelisted[account] = true;
-    }
-
-    // Remove an address from the whitelist
-    function removeWhitelisted(address account) external onlyOwner {
-        _whitelisted[account] = false;
-    }
-
-    // Check if an address is whitelisted (KYC verified)
-    function isWhitelisted(address account) public view returns (bool) {
-        return _whitelisted[account];
-    }
-
-    // Check if an address is a controller
-    function isController(address controller) public view returns (bool) {
-        for (uint256 i = 0; i < _controllers.length; i++) {
-            if (_controllers[i] == controller) {
-                return true;
+        // Ganache 네트워크에 연결된 지갑 주소 가져오기
+        async function getWalletAddresses() {
+            try {
+                const accounts = await provider.listAccounts();  // 연결된 지갑 주소들 가져오기
+                return accounts;  // 지갑 주소 배열 반환
+            } catch (error) {
+                console.error("Failed to fetch wallet addresses:", error);
+                return [];
             }
         }
-        return false;
-    }
-}
+
+        // 지갑 주소별 토큰 보유량 가져오기
+        async function getTokenBalance(address) {
+            try {
+                const balance = await erc1400Contract.balanceOf(address);
+                return ethers.utils.formatUnits(balance, 18);  // 18 decimal places 포맷팅
+            } catch (error) {
+                console.error("Failed to fetch token balance:", error);
+                return "0";
+            }
+        }
+
+        // 지갑 주소별 파티션별 토큰 보유량 가져오기
+        async function getPartitionBalances(address) {
+            const partitionBalances = {};
+            for (const partition of partitions) {
+                try {
+                    const balance = await erc1400Contract.balanceOfByPartition(partition, address);
+                    partitionBalances[partition] = ethers.utils.formatUnits(balance, 18);  // 파티션별 잔액 저장
+                } catch (error) {
+                    console.error(`Failed to fetch balance for partition ${partition}:`, error);
+                    partitionBalances[partition] = "0";  // 에러 시 0으로 설정
+                }
+            }
+            return partitionBalances;
+        }
+
+
+        // 버튼 클릭 시 지갑 주소별 토큰 보유량을 업데이트
+        async function updateBalances() {
+            walletAddresses = await getWalletAddresses();  // 지갑 주소 가져오기
+            await displayWalletAddresses();  // 지갑 주소 및 토큰 보유량 출력
+        }
+
+        // 지갑 주소 및 토큰 보유량을 화면에 출력하고, select 요소 업데이트
+        async function displayWalletAddresses() {
+            const walletList = document.getElementById("walletList");
+            const walletSelect = document.getElementById("walletSelect");
+            walletList.innerHTML = "";  // 기존 리스트 초기화
+            walletSelect.innerHTML = "";  // 드롭다운 초기화
+
+            for (const address of walletAddresses) {
+                // 지갑 주소별 총 토큰 보유량 가져오기
+                const totalBalance = await getTokenBalance(address);
+
+                // 지갑 주소별 파티션별 토큰 보유량 가져오기
+                const partitionBalances = await getPartitionBalances(address);
+
+                // 리스트에 지갑 주소와 총 토큰 보유량 추가
+                const li = document.createElement("li");
+                li.textContent = `${address} - Total Balance: ${totalBalance} tokens`;
+
+                // 각 파티션의 잔액을 추가로 출력
+                const partitionList = document.createElement("ul");
+                for (const partition in partitionBalances) {
+                    const partitionItem = document.createElement("li");
+                    partitionItem.textContent = `${ethers.utils.parseBytes32String(partition)}: ${partitionBalances[partition]} tokens`;
+                    partitionList.appendChild(partitionItem);
+                }
+
+                li.appendChild(partitionList);  // 파티션 리스트를 지갑 주소 항목에 추가
+                walletList.appendChild(li);  // 화면에 리스트 추가
+
+                // 드롭다운에 지갑 주소 추가
+                const option = document.createElement("option");
+                option.value = address;
+                option.text = address;
+                walletSelect.appendChild(option);
+            }
+        }
+
+
+        // 선택한 지갑 주소를 화이트리스트에 추가
+        async function addWhitelisted() {
+            const selectedAddress = document.getElementById("walletSelect").value;  // 선택된 지갑 주소
+            try {
+                const tx = await erc1400Contract.addWhitelisted(selectedAddress);  // 선택된 주소 화이트리스트에 추가
+                await tx.wait();
+                alert(`Address ${selectedAddress} added to whitelist`);
+            } catch (error) {
+                console.error("Failed to add whitelisted address:", error);
+                alert("Failed to add selected address to whitelist");
+            }
+        }
+
+
+        async function issueTokens() {
+            try {
+                const tx = await erc1400Contract.issue(walletAddresses[0], ethers.utils.parseUnits("1000", 18), "0x00");
+                await tx.wait();
+                alert("Tokens issued to recipient");
+            } catch (error) {
+                console.error(error);
+                alert("Failed to issue tokens");
+            }
+        }
+
+        // canTransfer 호출 함수
+        async function checkCanTransfer() {
+            const recipient = walletAddresses[1];  // 예시로 두 번째 주소로 전송
+            const amount = ethers.utils.parseUnits("100", 18);  // 전송할 토큰 양
+
+            try {
+                // canTransfer 함수 호출 (전송 가능 여부 확인)
+                const transferStatus = await erc1400Contract.canTransfer(recipient, amount);
+                const [statusCode, statusMessage] = [transferStatus.code, transferStatus.message];
+
+                if (statusCode === ethers.utils.formatBytes32String("0x51")) {
+                    alert(`Transfer is possible: ${statusMessage}`);
+                    // 전송 가능할 경우 transfer 함수를 호출할 수 있음
+                    await transferTokens(recipient, amount);
+                } else {
+                    alert(`Cannot transfer: ${statusMessage}`);
+                }
+            } catch (error) {
+                console.error("Error calling canTransfer:", error);
+                alert("Failed to check transfer status");
+            }
+        }
+
+        async function transferTokens(recipient, amount) {
+            try {
+                const tx = await erc1400Contract.transfer(recipient, amount);
+                await tx.wait();
+                alert("Tokens transferred successfully");
+            } catch (error) {
+                console.error("Failed to transfer tokens:", error);
+                alert("Token transfer failed");
+            }
+        }
+
+        // 파티션을 기준으로 토큰 발행 함수
+        async function issueTokensByPartition() {
+            const recipient = walletAddresses[0];  // 예시로 두 번째 주소로 발행
+            const amount = ethers.utils.parseUnits("100", 18);  // 발행할 토큰 양
+            const partition = ethers.utils.formatBytes32String("Partition 1");  // 파티션 이름
+
+            try {
+                const tx = await erc1400Contract.issueByPartition(partition, recipient, amount, "0x00");
+                await tx.wait();
+                alert("Tokens issued by partition successfully");
+            } catch (error) {
+                console.error("Failed to issue tokens by partition:", error);
+                alert("Token issuance by partition failed");
+            }
+        }
+
+        // 파티션을 기준으로 canTransferByPartition 호출 함수
+        async function checkCanTransferByPartition() {
+            const recipient = walletAddresses[2];  // 예시로 세 번째 주소로 전송
+            const amount = ethers.utils.parseUnits("50", 18);  // 전송할 토큰 양
+            const partition = ethers.utils.formatBytes32String("Partition 1");  // 파티션 이름
+
+            try {
+                // canTransferByPartition 함수 호출 (파티션 내에서 전송 가능 여부 확인)
+                const transferStatus = await erc1400Contract.canTransferByPartition(partition, recipient, amount);
+                const [statusCode, statusMessage] = [transferStatus.code, transferStatus.message];
+
+                if (statusCode === ethers.utils.formatBytes32String("0x51")) {
+                    alert(`Transfer by partition is possible: ${statusMessage}`);
+                    // 전송 가능할 경우 파티션 기반 transfer 함수를 호출할 수 있음
+                    await transferTokensByPartition(partition, recipient, amount);
+                } else {
+                    alert(`Cannot transfer by partition: ${statusMessage}`);
+                }
+            } catch (error) {
+                console.error("Error calling canTransferByPartition:", error);
+                alert("Failed to check partition transfer status");
+            }
+        }
+
+
+        // 파티션을 기준으로 토큰 전송 함수
+        async function transferTokensByPartition(partition, recipient, amount) {
+            try {
+                const tx = await erc1400Contract.transferByPartition(partition, recipient, amount, "0x00");
+                await tx.wait();
+                alert("Tokens transferred by partition successfully");
+            } catch (error) {
+                console.error("Failed to transfer tokens by partition:", error);
+                alert("Token transfer by partition failed");
+            }
+        }
+
+
+        async function redeemTokens() {
+            try {
+                const tx = await erc1400Contract.redeem(ethers.utils.parseUnits("100", 18), "0x00");
+                await tx.wait();
+                alert("Tokens redeemed");
+            } catch (error) {
+                console.error(error);
+                alert("Failed to redeem tokens");
+            }
+        }
+    </script>
+</body>
+</html>
