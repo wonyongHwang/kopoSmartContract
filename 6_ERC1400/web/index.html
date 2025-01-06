@@ -5,43 +5,51 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ERC1400 Token Interaction</title>
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.0/dist/ethers.umd.min.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-        ul {
-            list-style-type: none;
-        }
-        li {
-            margin-bottom: 5px;
-            font-size: 16px;
-        }
-    </style>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <h1>ERC1400 Token Interaction</h1>
+    <div class="container py-5">
+        <h1 class="text-center mb-4">ERC1400 Token Interaction</h1>
 
-    <!-- <button onclick="addWhitelisted()">Add Whitelisted</button> -->
-    <label for="walletSelect">Select Wallet Address:</label>
-    <select id="walletSelect"></select>
-    <button onclick="addWhitelisted()">Add Selected to Whitelist</button>
-    <p></p>
-    <button onclick="issueTokens()">Issue Tokens</button>
+        <!-- Whitelist Management -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Whitelist Management</h5>
+                <div class="mb-3">
+                    <label for="walletSelect" class="form-label">Select Wallet Address:</label>
+                    <select id="walletSelect" class="form-select"></select>
+                </div>
+                <button onclick="addWhitelisted()" class="btn btn-primary w-100 mb-2">Add Selected to Whitelist</button>
+            </div>
+        </div>
 
-    <button onclick="checkCanTransfer()">Check Can Transfer && Transfer</button>
-    
+        <!-- Token Operations -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Token Operations</h5>
+                <button onclick="issueTokens()" class="btn btn-success w-100 mb-2">Issue Tokens</button>
+                <button onclick="checkCanTransfer()" class="btn btn-info w-100 mb-2">Check Can Transfer & Transfer</button>
+                <button onclick="issueTokensByPartition()" class="btn btn-warning w-100 mb-2">Issue Tokens by Partition</button>
+                <button onclick="checkCanTransferByPartition()" class="btn btn-secondary w-100 mb-2">Check Can Transfer by Partition</button>
+                <button onclick="redeemTokens()" class="btn btn-danger w-100 mb-2">Redeem Tokens</button>
+            </div>
+        </div>
 
-    <button onclick="issueTokensByPartition()">Issue Tokens by Partition</button>
-    <button onclick="checkCanTransferByPartition()">Check Can Transfer by Partition</button>
+        <!-- Update Balances -->
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Update Balances</h5>
+                <button onclick="updateBalances()" class="btn btn-dark w-100">Update Token Balances</button>
+            </div>
+        </div>
 
-    <button onclick="redeemTokens()">Redeem Tokens</button>
-    <p></p>
-    <button onclick="updateBalances()">Update Token Balances</button>
-
-    <h2>Connected Wallet Addresses</h2>
-    <ul id="walletList">
-        <!-- 지갑 주소 리스트가 여기에 표시됨 -->
-    </ul>
+        <!-- Connected Wallet Addresses -->
+        <h2 class="mt-5">Connected Wallet Addresses</h2>
+        <ul id="walletList" class="list-group">
+            <!-- Wallet addresses will be displayed here -->
+        </ul>
+    </div>
 
     <script>
         const provider = new ethers.providers.JsonRpcProvider("http://127.0.0.1:8545");
@@ -937,7 +945,7 @@
         "type": "function"
     }
 ];  // ERC1400 컨트랙트 ABI
-        const contractAddress = "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9";  // 배포된 스마트 컨트랙트 주소
+        const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";  // 배포된 스마트 컨트랙트 주소
         const erc1400Contract = new ethers.Contract(contractAddress, contractABI, wallet);
 
         let walletAddresses = [];
