@@ -25,19 +25,19 @@ contract Voting {
 
     // Function to add a candidate (owner only)
     function addCandidate(string memory _name) public {
-        require(msg.sender == owner, "Only the contract owner can add candidates.");  // 소유자만 호출 가능
+        require(msg.sender == owner, "Only the contract owner can add candidates.");  
         candidates.push(Candidate(_name, 0));
     }
 
     // voting
     function vote(uint _candidateIndex) public {
-        require(!voters[msg.sender], "You have already voted.");  // 이미 투표한 사람은 다시 투표 불가
-        require(_candidateIndex < candidates.length, "Invalid candidate index.");  // 유효한 후보자 여부 확인
+        require(!voters[msg.sender], "You have already voted."); 
+        require(_candidateIndex < candidates.length, "Invalid candidate index.");  // checks whether the selected candidate is valid 
 
-        voters[msg.sender] = true;  // 투표자 기록
-        candidates[_candidateIndex].voteCount++;  // 후보자 득표수 증가
+        voters[msg.sender] = true;  
+        candidates[_candidateIndex].voteCount++;  
 
-        emit VoteCast(msg.sender, _candidateIndex);  // 투표 이벤트 발생
+        emit VoteCast(msg.sender, _candidateIndex);  
     }
 
     // Function that returns the number of votes for each candidate
