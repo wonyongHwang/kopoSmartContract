@@ -15,7 +15,7 @@ contract Token {
 
     constructor(uint256 _initialSupply) {
         totalSupply = _initialSupply * 10 ** uint256(decimals);
-        balanceOf[msg.sender] = totalSupply;  // 초기 발행 토큰을 컨트랙트 배포자에게 할당
+        balanceOf[msg.sender] = totalSupply;  // Assign the initially minted tokens to the contract deployer
     }
 
     function transfer(address _to, uint256 _value) public returns (bool success) {
@@ -46,7 +46,7 @@ contract Token {
 contract ICO {
     Token public token;
     address public owner;
-    uint256 public rate = 100;  // 1 웨이 : 100 토큰
+    uint256 public rate = 100;  // 1 wei <-> 100 토큰
 
     event BoughtTokens(address buyer, uint256 amount);
 
@@ -55,7 +55,7 @@ contract ICO {
         owner = msg.sender;
     }
 
-    // 투자자가 이더를 보낼 때 호출되는 함수
+    // Function that is called when an investor sends Ether
     receive() external payable {
         uint256 tokenAmount = msg.value * rate;
         require(token.balanceOf(owner) >= tokenAmount, "Not enough tokens");
@@ -63,12 +63,27 @@ contract ICO {
         emit BoughtTokens(msg.sender, tokenAmount);
     }
 
-    // 계약 소유자에게 이더 인출을 허용하는 함수
+    // Function that allows the contract owner to withdraw Ether
     function withdraw() public {
         require(msg.sender == owner, "Only owner can withdraw");
         payable(owner).transfer(address(this).balance);
     }
 }
+
+// Execution order:
+// 1. Deploy the TOKEN contract.
+// 2. Deploy the ICO contract (pass the TOKEN contract address to the constructor when deploying).
+// 3. Call the `approve` function of the TOKEN contract:
+//      - First parameter: Address of the deployed ICO contract
+//      - Second parameter: Total number of tokens the ICO contract is allowed to transfer to investors via `transferFrom` (e.g., 1000)
+// 4. Verify using the `allowance` function of the TOKEN contract:
+//      - First parameter: Deployer's address
+//      - Second parameter: Address of the deployed ICO contract
+// 5. For testing, switch to the second wallet address in Remix.
+// 6. From the second wallet, set VALUE to 1 wei and click `Transact` on the deployed ICO contract.
+// 7. Check the results using `balanceOf` and `allowance`.
+
+
 // 실행 순서 
 // TOKEN 컨트랙트 배포 -> ICO 컨트랙트 배포(배포시 TOKEN 컨트랙트 배포 주소를 생성자에 전달)
 // TOKEN 컨트랙트의 approve 함수 호출 
