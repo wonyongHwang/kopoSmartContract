@@ -29,20 +29,20 @@
 
     <script>
         async function sendEther() {
-            // MetaMask or other provider 연결 확인
+            // MetaMask or other provider 
             if (typeof window.ethereum !== 'undefined') {
                 const web3 = new Web3(window.ethereum);
                 try {
                     await window.ethereum.request({ method: 'eth_requestAccounts' });
                     
                     const accounts = await web3.eth.getAccounts();
-                    const senderAddress = accounts[0]; // 현재 MetaMask에 연결된 계정
+                    const senderAddress = accounts[0]; // MetaMask account
                     const recipientAddress = document.getElementById('recipientAddress').value;
                     const amountInEther = document.getElementById('amount').value;
 
                     const amountInWei = web3.utils.toWei(amountInEther, 'ether'); // ETH
 
-                    // 트랜잭션 보내기
+                    // sending transaction
                     const transaction = await web3.eth.sendTransaction({
                         from: senderAddress,
                         to: recipientAddress,
