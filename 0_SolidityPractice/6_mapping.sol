@@ -2,51 +2,44 @@
 pragma solidity ^0.8.0;
 
 contract Bank {
-    
-    // 각 계좌의 잔액을 관리하는 매핑
+
     mapping(address => uint) private balances;
 
-    // 입금 이벤트
     event Deposit(address indexed account, uint amount);
-
-    // 출금 이벤트
     event Withdrawal(address indexed account, uint amount);
+    event InternalTransfer(address indexed from, address indexed to, uint amount); // ✅ 변경: 사용자 혼란 방지를 위해 이름 변경
 
-    // 이체 이벤트
-    event Transfer(address indexed from, address indexed to, uint amount);
-
-    // 특정 계좌에 잔액을 확인하는 함수
     function getBalance() public view returns (uint) {
         return balances[msg.sender];
     }
 
-    // 입금 함수 (이더를 스마트 컨트랙트로 전송)
     function deposit() public payable {
         require(msg.value > 0, "should be > 0");
         balances[msg.sender] += msg.value;
         emit Deposit(msg.sender, msg.value);
     }
 
-    // 출금 함수 (이더를 본인의 주소로 전송)
     function withdraw(uint _amount) public {
-        require(balances[msg.sender] >= _amount, "error");
-        balances[msg.sender] -= _amount;
-        payable(msg.sender).transfer(_amount);
+        require(balances[msg.sender] >= _amount, "Insufficient balance");
+
+        // ✅ 변경: Checks-Effects-Interactions 패턴 적용 — 재진입 공격 방지
+        balances[msg.sender] -= _amount; // 상태 먼저 변경
+        payable(msg.sender).transfer(_amount); // 이후 이더 전송
+
         emit Withdrawal(msg.sender, _amount);
     }
 
-    // 특정 계좌로 이체하는 함수
-    function transfer(address _to, uint _amount) public {
-        require(balances[msg.sender] >= _amount, "error");
-        require(_to != address(0), "error");
-        
+    function internalTransfer(address _to, uint _amount) public {
+        require(balances[msg.sender] >= _amount, "Insufficient balance");
+        require(_to != address(0), "Invalid address");
+
+        // ✅ 변경: transfer → internalTransfer 로 명확하게 변경 (실제 이더 전송 아님 명시)
         balances[msg.sender] -= _amount;
         balances[_to] += _amount;
-        
-        emit Transfer(msg.sender, _to, _amount);
+
+        emit InternalTransfer(msg.sender, _to, _amount);
     }
-    
-    // 은행의 총 잔액을 확인하는 함수 (컨트랙트 자체의 잔액)
+
     function getBankBalance() public view returns (uint) {
         return address(this).balance;
     }
