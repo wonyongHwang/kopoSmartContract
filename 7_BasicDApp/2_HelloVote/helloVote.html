@@ -198,7 +198,7 @@
                 "type": "function"
             }
         ];
-        const contractAddress = "0xDd9cad2fCc28A126E9e4bd1a8db7803dCa523CFB";
+        const contractAddress = "0x55648D3a7d0B16a92B0Bdab1760ABDa6C0949938";
         let votingContract;
         let selectedCandidateIndex = null;
         let currentAccount = null;
@@ -240,6 +240,31 @@
                 document.getElementById('walletStatus').textContent = "MetaMask is not installed. Please install MetaMask to use this DApp.";
             }
         }
+		
+		// Listen for account changes in MetaMask
+		window.ethereum.on('accountsChanged', async (accounts) => {
+			if (accounts.length === 0) {
+				document.getElementById('walletStatus').textContent = "Please connect to MetaMask.";
+				currentAccount = null;
+				return;
+			}
+
+			currentAccount = accounts[0];
+			document.getElementById('walletStatus').textContent = `Switched to account: ${currentAccount}`;
+
+			// Check if new account is the contract owner
+			if (currentAccount.toLowerCase() === contractOwner.toLowerCase()) {
+				document.getElementById('addCandidateSection').style.display = "block";
+			} else {
+				document.getElementById('addCandidateSection').style.display = "none";
+			}
+
+			// Reset voting status and UI
+			await checkIfVoted(currentAccount);
+			document.getElementById("selectedCandidate").textContent = "No candidate selected.";
+			document.getElementById("voteButton").disabled = true;
+			selectedCandidateIndex = null;
+		});
 
         // Check if the current account has already voted
         async function checkIfVoted(account) {
