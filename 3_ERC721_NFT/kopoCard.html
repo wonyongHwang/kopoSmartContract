@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart Finance Student NFT Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f3f6fb;
+      padding: 30px;
+    }
+    button {
+      padding: 12px 20px;
+      margin: 10px 10px 20px 0;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    canvas {
+      border: 1px solid #ccc;
+      margin: 10px;
+      background: white;
+    }
+  </style>
+</head>
+<body>
+  <h2>Smart Finance Student NFT Generator</h2>
+
+  <button onclick="generateAll()">Generate Preview</button>
+  <button onclick="downloadAll()">Download All PNG</button>
+
+  <div id="preview"></div>
+
+  <script>
+    const department = "Department of Smart Finance, Korea Polytechnics";
+
+    const studentIds = [
+      "2620340001", "2620340002", "2620340003", "2620340004",
+      "2620340005", "2620340006", "2620340007", "2620340008",
+      "2620340009", "2620340010", "2620340011", "2620340012",
+      "2620340013", "2620340014", "2620340015", "2620340016",
+      "2620340017", "2620340018", "2620340019", "2620340020",
+      "2620340021", "2620340022"
+    ];
+
+    const canvases = [];
+
+    function drawStudentNFT(studentId, index) {
+      const canvas = document.createElement("canvas");
+      canvas.width = 1000;
+      canvas.height = 600;
+
+      const ctx = canvas.getContext("2d");
+
+      // background
+      const bg = ctx.createLinearGradient(0, 0, 1000, 600);
+      bg.addColorStop(0, "#071b3a");
+      bg.addColorStop(0.55, "#0c4a7d");
+      bg.addColorStop(1, "#f5f8ff");
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // decorative circles
+      ctx.globalAlpha = 0.15;
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(830, 100, 180, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(100, 520, 220, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+
+      // card body
+      roundRect(ctx, 70, 60, 860, 480, 35, "#ffffff");
+
+      // top bar
+      roundRect(ctx, 70, 60, 860, 95, 35, "#003b7a");
+      ctx.fillStyle = "#003b7a";
+      ctx.fillRect(70, 110, 860, 45);
+
+      // title
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 34px Arial";
+      ctx.fillText("SMART FINANCE STUDENT NFT", 120, 118);
+
+      // subtitle
+      ctx.font = "18px Arial";
+      ctx.fillText("Korea Polytechnics · Polygon NFT Collection", 120, 145);
+
+      // avatar placeholder
+      roundRect(ctx, 120, 210, 180, 180, 24, "#e8eef8");
+      ctx.fillStyle = "#52616f";
+      ctx.beginPath();
+      ctx.arc(210, 270, 45, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(210, 375, 75, Math.PI, 0);
+      ctx.fill();
+
+      // ID text
+      ctx.fillStyle = "#111827";
+      ctx.font = "bold 26px Arial";
+      ctx.fillText("STUDENT ID", 360, 245);
+
+      ctx.font = "bold 52px Arial";
+      ctx.fillText(studentId, 360, 315);
+
+      // department
+      ctx.font = "22px Arial";
+      wrapText(ctx, department, 360, 370, 500, 32);
+
+      // NFT number
+      ctx.fillStyle = "#003b7a";
+      ctx.font = "bold 24px Arial";
+      ctx.fillText(`#${String(index + 1).padStart(3, "0")}`, 800, 500);
+
+      // seal
+      ctx.strokeStyle = "#d4af37";
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      ctx.arc(820, 245, 70, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.fillStyle = "#d4af37";
+      ctx.font = "bold 22px Arial";
+      ctx.fillText("NFT", 798, 250);
+
+      ctx.font = "13px Arial";
+      ctx.fillText("SMART", 795, 275);
+
+      // bottom line
+      ctx.strokeStyle = "#d4af37";
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(120, 500);
+      ctx.lineTo(760, 500);
+      ctx.stroke();
+
+      return canvas;
+    }
+
+    function generateAll() {
+      const preview = document.getElementById("preview");
+      preview.innerHTML = "";
+      canvases.length = 0;
+
+      studentIds.forEach((id, index) => {
+        const canvas = drawStudentNFT(id, index);
+        canvases.push({ id, canvas });
+        preview.appendChild(canvas);
+      });
+    }
+
+    async function downloadAll() {
+      if (canvases.length === 0) {
+        generateAll();
+      }
+
+      const zip = new JSZip();
+
+      for (const { id, canvas } of canvases) {
+        const blob = await new Promise(resolve => {
+          canvas.toBlob(resolve, "image/png");
+        });
+
+        zip.file(`smart-finance-student-${id}.png`, blob);
+      }
+
+      const zipBlob = await zip.generateAsync({ type: "blob" });
+
+      const link = document.createElement("a");
+      link.download = "smart-finance-student-nft-images.zip";
+      link.href = URL.createObjectURL(zipBlob);
+      link.click();
+
+      URL.revokeObjectURL(link.href);
+    }
+
+    function roundRect(ctx, x, y, width, height, radius, fillStyle) {
+      ctx.fillStyle = fillStyle;
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + width - radius, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+      ctx.lineTo(x + width, y + height - radius);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      ctx.lineTo(x + radius, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.fill();
+    }
+
+    function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+      const words = text.split(" ");
+      let line = "";
+
+      for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + " ";
+        const metrics = ctx.measureText(testLine);
+        const testWidth = metrics.width;
+
+        if (testWidth > maxWidth && n > 0) {
+          ctx.fillText(line, x, y);
+          line = words[n] + " ";
+          y += lineHeight;
+        } else {
+          line = testLine;
+        }
+      }
+
+      ctx.fillText(line, x, y);
+    }
+
+    generateAll();
+  </script>
+</body>
+</html>
