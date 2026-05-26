@@ -34,3 +34,4 @@ contract NFT is ERC721 {
         return newDeedId;
     }
 }
+// https://gateway.pinata.cloud/ipfs/<cid>
