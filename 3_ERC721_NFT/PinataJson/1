@@ -1,0 +1,19 @@
+{
+  "name": "Smart Finance Student NFT #001",
+  "description": "Student ID NFT for Department of Smart Finance, Korea Polytechnics.",
+  "image": "ipfs://bafybeiecyn4v6i4ty44q5fmwsjl7c63qbxfrtmveyhpazjn2icj4oleqmq/smart-finance-student-2620340001.png",
+  "attributes": [
+    {
+      "trait_type": "Department",
+      "value": "Department of Smart Finance, Korea Polytechnics"
+    },
+    {
+      "trait_type": "Student ID",
+      "value": "2620340001"
+    },
+    {
+      "trait_type": "Network",
+      "value": "Polygon"
+    }
+  ]
+}
