@@ -1,37 +1,35 @@
 // SPDX-License-Identifier: GPL-3.0
 
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts@4.9.6/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 
-contract NFT is ERC721 {
-    // https://ethereum.stackexchange.com/questions/97186/what-is-the-reason-behind-writing-using-counters-for-counters-counters-when-us
-    using Counters for Counters.Counter; 
-    Counters.Counter private deedId;
+contract NFT is ERC721, Ownable {
+    uint256 private _nextTokenId;
 
-    constructor() ERC721("KOPO", "KPO") {}
+    mapping(uint256 => string) private _tokenURIs;
 
-    mapping(uint => string) tokenURIs;
     event NFTMinted(address to, uint256 tokenId, string tokenURI);
 
+    constructor() ERC721("KOPO", "KPO") Ownable(msg.sender) {
+        _nextTokenId = 1;
+    }
 
     function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
-      return tokenURIs[tokenId];
+        require(_ownerOf(tokenId) != address(0), "URI query for nonexistent token");
+        return _tokenURIs[tokenId];
     }
 
-    function mintNFT(address to, string memory uri) public returns (uint256)
-    {
-        deedId.increment();
-        uint256 newDeedId = deedId.current();
-        _mint(to, newDeedId);
-        tokenURIs[newDeedId] = uri;
+    function mintNFT(address to, string memory uri) public onlyOwner returns (uint256) {
+        uint256 tokenId = _nextTokenId;
+        _nextTokenId++;
 
-        emit NFTMinted(to, newDeedId, uri); // 이벤트 발생
-        
-        return newDeedId;
+        _mint(to, tokenId);
+        _tokenURIs[tokenId] = uri;
+
+        emit NFTMinted(to, tokenId, uri);
+
+        return tokenId;
     }
 }
-// https://gateway.pinata.cloud/ipfs/<cid>
